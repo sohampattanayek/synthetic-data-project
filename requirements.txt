@@ -1,0 +1,5 @@
+pandas
+sdv>=1.37.1
+scipy
+numpy
+scikit-learn
