@@ -1,5 +1,8 @@
-pandas
-sdv>=1.37.1
-scipy
+# monitor.py hooks into CTGAN's internal training loop, so ctgan is pinned.
+ctgan==0.12.1
+torch>=2.2
+pandas>=2.2,<3
 numpy
-scikit-learn
+scipy
+scikit-learn>=1.4
+matplotlib
