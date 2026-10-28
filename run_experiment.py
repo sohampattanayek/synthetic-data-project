@@ -78,6 +78,9 @@ def main():
     ap.add_argument("--detector", choices=["none", "patience", "cusum"], default="none")
     ap.add_argument("--lr", type=float, default=2e-4, help="generator and discriminator learning rate")
     ap.add_argument("--batch-size", type=int, default=500, help="must be a multiple of 10 (CTGAN pac)")
+    ap.add_argument("--spike-epoch", type=int, default=None,
+                    help="planted failure: multiply learning rates after this epoch")
+    ap.add_argument("--spike-factor", type=float, default=100.0)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--name", default=None, help="results subfolder name")
     args = ap.parse_args()
@@ -108,6 +111,7 @@ def main():
         detector=make_detector(args.detector), seed=args.seed,
         batch_size=args.batch_size, generator_lr=args.lr, discriminator_lr=args.lr,
         verbose=True,
+        lr_spike=(args.spike_epoch, args.spike_factor) if args.spike_epoch else None,
         extra_metrics=lambda synth: {
             "tstr_val": tstr_accuracy(synth, val, "income", cat_cols, args.seed)},
     )

@@ -7,3 +7,5 @@ data/
 results/*
 !results/pilot_s*/
 !results/pilot_summary/
+!results/spike90_s*/
+!results/changepoints/

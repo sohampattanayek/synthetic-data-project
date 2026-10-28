@@ -1,0 +1,53 @@
+{
+  "config": {
+    "epochs": 150,
+    "check_every": 3,
+    "max_rows": 10000,
+    "n_eval": 2000,
+    "detector": "none",
+    "lr": 0.0002,
+    "batch_size": 500,
+    "spike_epoch": 90,
+    "spike_factor": 100.0,
+    "seed": 3,
+    "name": "spike90_s3"
+  },
+  "epochs_trained": 150,
+  "stopped_early_at": null,
+  "best_epoch": 27,
+  "noise_floor": {
+    "score": 0.017744,
+    "ks_mean": 0.018167,
+    "ks_max": 0.0335,
+    "jsd_mean": 0.0026572,
+    "tvd_mean": 0.025167,
+    "excess_point_mass_max": 0.024,
+    "corr_dist": 0.028439,
+    "c2st": 0.003643
+  },
+  "final": {
+    "score": 0.38871,
+    "ks_mean": 0.33489,
+    "ks_max": 0.52583,
+    "jsd_mean": 0.14446,
+    "tvd_mean": 0.11378,
+    "excess_point_mass_max": 0.10617,
+    "corr_dist": 0.077934,
+    "c2st": 1.0
+  },
+  "best_checkpoint": {
+    "score": 0.32794,
+    "ks_mean": 0.23142,
+    "ks_max": 0.47917,
+    "jsd_mean": 0.01903,
+    "tvd_mean": 0.08063,
+    "excess_point_mass_max": 0.0,
+    "corr_dist": 0.061485,
+    "c2st": 0.9997
+  },
+  "downstream_accuracy_on_real_test": {
+    "train_real": 0.848,
+    "train_final_synth": 0.7715,
+    "train_best_synth": 0.7535
+  }
+}

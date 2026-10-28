@@ -1,0 +1,26 @@
+run,series,spike_epoch,alarm_epoch,false_alarm_before_spike,delay_epochs,control_alarm_epoch
+spike90_s0,TSTR accuracy,90,102.0,False,12.0,
+spike90_s0,Aggregate fidelity score,90,93.0,False,3.0,
+spike90_s0,Max excess point mass,90,93.0,False,3.0,120.0
+spike90_s0,Mean KS statistic,90,93.0,False,3.0,
+spike90_s0,Generator loss,90,93.0,False,3.0,105.0
+spike90_s1,TSTR accuracy,90,,False,,
+spike90_s1,Aggregate fidelity score,90,93.0,False,3.0,
+spike90_s1,Max excess point mass,90,93.0,False,3.0,147.0
+spike90_s1,Mean KS statistic,90,93.0,False,3.0,
+spike90_s1,Generator loss,90,93.0,False,3.0,108.0
+spike90_s2,TSTR accuracy,90,,False,,
+spike90_s2,Aggregate fidelity score,90,93.0,False,3.0,
+spike90_s2,Max excess point mass,90,93.0,False,3.0,
+spike90_s2,Mean KS statistic,90,93.0,False,3.0,
+spike90_s2,Generator loss,90,93.0,False,3.0,105.0
+spike90_s3,TSTR accuracy,90,,False,,
+spike90_s3,Aggregate fidelity score,90,93.0,False,3.0,
+spike90_s3,Max excess point mass,90,93.0,False,3.0,
+spike90_s3,Mean KS statistic,90,93.0,False,3.0,
+spike90_s3,Generator loss,90,93.0,False,3.0,96.0
+spike90_s4,TSTR accuracy,90,96.0,False,6.0,
+spike90_s4,Aggregate fidelity score,90,93.0,False,3.0,
+spike90_s4,Max excess point mass,90,93.0,False,3.0,123.0
+spike90_s4,Mean KS statistic,90,93.0,False,3.0,
+spike90_s4,Generator loss,90,93.0,False,3.0,120.0

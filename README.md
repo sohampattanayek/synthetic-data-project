@@ -79,6 +79,20 @@ What the pilot shows:
 
 Takeaway: the default setting is the easy case. Comparing stopping rules only makes sense where quality actually degrades, so induced-failure and fragile regimes come next.
 
+## Change-point analysis
+
+`changepoints.py` treats each logged metric as a time series (one point every 3 epochs) and asks where it changes.
+
+- **Natural breaks (pilot runs):** CUSUM for a change in mean, plus binary segmentation. TSTR shifts up (0.73 to 0.79) around epoch 86 on average; mean KS shifts down around epoch 79, at or before the TSTR break in 4 of 5 seeds. The generator loss turns from falling to rising around epoch 62, but that slope change is not significant.
+- **Planted break:** the same 5 seeds rerun with both learning rates multiplied by 100 after epoch 90 (`--spike-epoch 90 --spike-factor 100`). An online one-sided CUSUM on the aggregate fidelity score or mean KS raises an alarm at the next check (epoch 93) in 5/5 seeds, with no false alarms before the spike or in the unspiked runs. The same detector on generator loss also fires in all 5 unspiked runs, because the loss rises naturally late in training. TSTR detects the spike in only 2 of 5.
+
+```bash
+for s in 0 1 2 3 4; do python run_experiment.py --epochs 150 --check-every 3 --seed $s --spike-epoch 90 --name spike90_s$s; done
+python changepoints.py --pilot results/pilot_s{0,1,2,3,4} --spiked results/spike90_s{0,1,2,3,4} --out results/changepoints
+```
+
+![Change points](results/changepoints/changepoints.png)
+
 ## Files
 
 | File | Purpose |
@@ -89,12 +103,14 @@ Takeaway: the default setting is the easy case. Comparing stopping rules only ma
 | `run_experiment.py` | runs one experiment and writes results |
 | `plot_results.py` | redraws a run's figure from its saved metrics |
 | `analyze_pilot.py` | aggregates several runs: correlations with utility, checkpoint selection, summary figure |
+| `changepoints.py` | offline CUSUM / binary segmentation on metric series; online CUSUM on planted-break runs |
 
 ## Roadmap
 
 - [x] Pilot: 5 seeds on Adult with per-check downstream utility
 - [ ] Estimate how much of per-check TSTR variation is sampling noise
-- [ ] Induce degradation deliberately (learning rate, batch size, category imbalance) and label its onset
+- [x] Planted break (learning-rate spike at a known epoch) with online CUSUM
+- [ ] Subtler induced failures (batch size, category imbalance, smaller spikes)
 - [ ] Compare detectors on detection delay, false alarms and compute saved
 - [ ] Add more datasets (e.g. Covertype, a credit-default dataset)
 - [ ] Study how to weight metrics in the aggregate score

@@ -93,6 +93,7 @@ class MonitoredCTGAN:
     def __init__(self, real_eval: pd.DataFrame, numeric_cols, categorical_cols,
                  check_every: int = 1, n_eval: int = 2000, detector=None,
                  seed: int = 0, verbose: bool = True, extra_metrics=None,
+                 lr_spike: tuple[int, float] | None = None,
                  **ctgan_kwargs):
         self.real_eval = real_eval
         self.categorical_cols = list(categorical_cols)
@@ -104,6 +105,11 @@ class MonitoredCTGAN:
         # Optional callable(synthetic_df) -> dict of extra values to log at each
         # check (e.g. downstream utility). Logged only; never used for decisions.
         self.extra_metrics = extra_metrics
+        # Optional planted failure: (epoch, factor). After that epoch finishes,
+        # both optimizers' learning rates are multiplied by `factor`, giving a
+        # break point whose location is known exactly.
+        self.lr_spike = lr_spike
+        self._optimizers = []
         self.model = CTGAN(**ctgan_kwargs)
 
         self.history: list[dict] = []
@@ -117,6 +123,14 @@ class MonitoredCTGAN:
     def _on_epoch_end(self, epoch: int) -> bool:
         """Called after each epoch. Returns True to stop training."""
         self._hook_calls += 1
+        if self.lr_spike and epoch == self.lr_spike[0]:
+            if len(self._optimizers) != 2:
+                raise RuntimeError("could not find CTGAN's two optimizers for the lr spike")
+            for opt in self._optimizers:
+                for g in opt.param_groups:
+                    g["lr"] *= self.lr_spike[1]
+            if self.verbose:
+                print(f"--- epoch {epoch}: learning rate multiplied by {self.lr_spike[1]:g} ---", flush=True)
         if epoch % self.check_every != 0:
             return False
 
@@ -167,11 +181,29 @@ class MonitoredCTGAN:
             def set_description(self, *a, **k):
                 pass
 
+        # Capture the optimizers CTGAN creates inside fit() so the planted
+        # learning-rate spike can reach them.
+        original_optim = _ctgan_module.optim
+        registry = self._optimizers
+
+        class _RecordingAdam(original_optim.Adam):
+            def __init__(self, *a, **k):
+                super().__init__(*a, **k)
+                registry.append(self)
+
+        class _OptimShim:
+            Adam = _RecordingAdam
+
+            def __getattr__(self, name):
+                return getattr(original_optim, name)
+
         _ctgan_module.tqdm = _HookedIterator
+        _ctgan_module.optim = _OptimShim()
         try:
             yield
         finally:
             _ctgan_module.tqdm = original
+            _ctgan_module.optim = original_optim
 
     def fit(self, train: pd.DataFrame, epochs: int):
         with self._patched_epoch_iterator():
