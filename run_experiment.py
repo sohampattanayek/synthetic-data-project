@@ -5,8 +5,12 @@ Example:
     python run_experiment.py --epochs 100 --detector cusum
     python run_experiment.py --epochs 100 --lr 2e-3 --name high_lr   # try to induce degradation
 
+Real data is split 60/20/20 into train / validation / test. Fidelity and
+per-check downstream utility (TSTR) are measured on the validation split; the
+final comparison uses the untouched test split.
+
 Outputs go to results/<name>/:
-    metrics.csv                  per-check fidelity metrics, losses, alarms
+    metrics.csv                  per-check fidelity metrics, losses, TSTR, alarms
     summary.json                 config, best epoch, final vs. best comparison
     fidelity_over_training.png   the main figure
 """
@@ -84,9 +88,12 @@ def main():
     out.mkdir(parents=True, exist_ok=True)
 
     df, num_cols, cat_cols = load_adult(args.max_rows or None, args.seed)
-    train, holdout = train_test_split(df, test_size=0.3, random_state=args.seed,
-                                      stratify=df["income"])
-    print(f"Adult: {len(train)} train rows, {len(holdout)} held-out rows")
+    train, rest = train_test_split(df, test_size=0.4, random_state=args.seed,
+                                   stratify=df["income"])
+    val, test = train_test_split(rest, test_size=0.5, random_state=args.seed,
+                                 stratify=rest["income"])
+    holdout = val  # fidelity is always measured against held-out real data
+    print(f"Adult: {len(train)} train / {len(val)} validation / {len(test)} test rows")
 
     # Noise floor: how different do two REAL samples look under the same metrics?
     report = FidelityReport(num_cols, cat_cols, seed=args.seed)
@@ -101,23 +108,25 @@ def main():
         detector=make_detector(args.detector), seed=args.seed,
         batch_size=args.batch_size, generator_lr=args.lr, discriminator_lr=args.lr,
         verbose=True,
+        extra_metrics=lambda synth: {
+            "tstr_val": tstr_accuracy(synth, val, "income", cat_cols, args.seed)},
     )
     mon.fit(train, epochs=args.epochs)
     hist = mon.history_frame()
     hist.to_csv(out / "metrics.csv", index=False, float_format="%.5g")
 
     # Compare the final generator with the best checkpoint.
-    n_final = len(holdout)
+    n_final = len(train)
     final_synth = mon.sample(n_final)
-    final_summary = report.summary(holdout, final_synth)
+    final_summary = report.summary(test, final_synth)
     mon.restore_best()
     best_synth = mon.sample(n_final)
-    best_summary = report.summary(holdout, best_synth)
+    best_summary = report.summary(test, best_synth)
 
     utility = {
-        "train_real": tstr_accuracy(train, holdout, "income", cat_cols, args.seed),
-        "train_final_synth": tstr_accuracy(final_synth, holdout, "income", cat_cols, args.seed),
-        "train_best_synth": tstr_accuracy(best_synth, holdout, "income", cat_cols, args.seed),
+        "train_real": tstr_accuracy(train, test, "income", cat_cols, args.seed),
+        "train_final_synth": tstr_accuracy(final_synth, test, "income", cat_cols, args.seed),
+        "train_best_synth": tstr_accuracy(best_synth, test, "income", cat_cols, args.seed),
     }
 
     last_epoch = int(hist["epoch"].iloc[-1])
@@ -129,7 +138,7 @@ def main():
         "noise_floor": {"score": noise_floor, **floor_summary},
         "final": {"score": aggregate(final_summary), **final_summary},
         "best_checkpoint": {"score": aggregate(best_summary), **best_summary},
-        "downstream_accuracy_on_real_holdout": utility,
+        "downstream_accuracy_on_real_test": utility,
     }
     (out / "summary.json").write_text(json.dumps(_round(summary), indent=2))
     plot_run(out)

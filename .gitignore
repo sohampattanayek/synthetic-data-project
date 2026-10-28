@@ -5,4 +5,5 @@ __pycache__/
 venv/
 data/
 results/*
-!results/example/
+!results/pilot_s*/
+!results/pilot_summary/

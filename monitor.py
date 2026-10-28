@@ -92,7 +92,8 @@ def make_detector(name: str, **kw):
 class MonitoredCTGAN:
     def __init__(self, real_eval: pd.DataFrame, numeric_cols, categorical_cols,
                  check_every: int = 1, n_eval: int = 2000, detector=None,
-                 seed: int = 0, verbose: bool = True, **ctgan_kwargs):
+                 seed: int = 0, verbose: bool = True, extra_metrics=None,
+                 **ctgan_kwargs):
         self.real_eval = real_eval
         self.categorical_cols = list(categorical_cols)
         self.report = FidelityReport(numeric_cols, categorical_cols, seed=seed)
@@ -100,6 +101,9 @@ class MonitoredCTGAN:
         self.n_eval = n_eval
         self.detector = detector or NoDetector()
         self.verbose = verbose
+        # Optional callable(synthetic_df) -> dict of extra values to log at each
+        # check (e.g. downstream utility). Logged only; never used for decisions.
+        self.extra_metrics = extra_metrics
         self.model = CTGAN(**ctgan_kwargs)
 
         self.history: list[dict] = []
@@ -130,13 +134,16 @@ class MonitoredCTGAN:
             self.best_score, self.best_epoch = score, epoch
             self.best_state = copy.deepcopy(self.model._generator.state_dict())
 
+        extra = self.extra_metrics(synth) if self.extra_metrics else {}
+
         stop = self.detector.update(score)
         self.history.append({"epoch": epoch, **summary, "score": score,
-                             "g_loss": g_loss, "d_loss": d_loss,
+                             "g_loss": g_loss, "d_loss": d_loss, **extra,
                              "alarm": stop, "eval_seconds": time.time() - t0})
         if self.verbose:
             print(f"epoch {epoch:4d} | score {score:.4f} | KS {summary['ks_mean']:.3f} "
                   f"| C2ST {summary['c2st']:.3f} | pile-up {summary['excess_point_mass_max']:.3f}"
+                  + (f" | TSTR {extra['tstr_val']:.3f}" if 'tstr_val' in extra else "")
                   + ("  <-- ALARM, stopping" if stop else ""), flush=True)
         if stop:
             self.stopped_epoch = epoch

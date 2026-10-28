@@ -4,7 +4,7 @@
 
 CTGAN training is unstable. Sample quality does not improve monotonically with epochs, and failures such as mode collapse are usually found only after training finishes. This project trains CTGAN with a per-epoch hook that samples from the generator, scores the samples against held-out real data, keeps the best checkpoint, and optionally stops early when a change detector fires.
 
-> Status: early-stage student research project. The monitoring code and metrics work; the experiments that would answer the research question (multiple datasets, seeds, induced failures, detector comparison) are in progress. See [Roadmap](#roadmap).
+> Status: early-stage student research project. The monitoring code works and a 5-seed pilot on one dataset is done (below). Induced-failure regimes, more datasets, other model families and the detector comparison are next. See [Roadmap](#roadmap).
 
 ## What it does
 
@@ -46,26 +46,38 @@ python run_experiment.py --epochs 100 --lr 2e-3 --name high_lr   # try to induce
 
 The UCI Adult dataset downloads automatically on first run. Each run writes `metrics.csv`, `summary.json` and `fidelity_over_training.png` to `results/<name>/`.
 
-## Example result
+## Pilot results
 
-One run: CTGAN on 10,000 Adult rows, 150 epochs, default settings, seed 0, metrics every 3 epochs (`python run_experiment.py --epochs 150 --check-every 3 --name example`).
+CTGAN on UCI Adult (10,000 rows, split 60/20/20 train/validation/test), default settings, 5 seeds, 150 epochs. Every 3 epochs, 2,000 synthetic rows are scored against the validation split, and downstream utility is measured as TSTR accuracy (train a classifier on the synthetic rows, test it on real validation rows).
 
-![Fidelity over training](results/example/fidelity_over_training.png)
+```bash
+for s in 0 1 2 3 4; do python run_experiment.py --epochs 150 --check-every 3 --seed $s --name pilot_s$s; done
+python analyze_pilot.py results/pilot_s{0,1,2,3,4} --out results/pilot_summary
+```
 
-| | Aggregate score | Mean KS | C2ST | Accuracy (train on X, test on real) |
-|---|---|---|---|---|
-| Real vs. real (noise floor) | 0.017 | 0.015 | 0.03 | 0.875 (real) |
-| CTGAN, final epoch 150 | 0.318 | 0.212 | 0.998 | 0.826 |
+![Pilot over training](results/pilot_summary/pilot_over_training.png)
 
-What this single run shows:
+Spearman correlation with per-check TSTR (mean ± sd over 5 seeds). Metrics are "lower is better", so a useful one correlates negatively.
 
-- **No collapse under default settings.** The score improves slowly and is still improving at epoch 150, so the best checkpoint is the last one. Studying degradation will require inducing it (e.g. higher learning rates).
-- **The fidelity score is noisy from check to check**, and the excess-point-mass metric jumps between ~0 and ~0.2. Any change detector has to tolerate this noise, which is why CUSUM uses a drift term.
-- **The classifier two-sample test is saturated:** a gradient-boosted classifier tells real from synthetic rows almost perfectly at every epoch. That makes it a strong overall verdict (the synthetic data is still easy to distinguish) but a poor *monitoring* signal, since it barely moves. A weaker classifier or a per-feature version may be more useful for tracking change.
-- **Loss curves do not track fidelity.** Generator loss falls sharply during epochs 0–60 while the fidelity score barely changes.
-- Downstream utility is reasonable: a classifier trained on synthetic data reaches 82.6% accuracy on real data versus 87.5% when trained on real data.
+| Quantity | Levels | Check-to-check changes |
+|---|---|---|
+| Epoch number (time trend alone) | 0.75 ± 0.07 | — |
+| Generator loss | 0.12 ± 0.10 | 0.04 ± 0.25 |
+| Mean KS statistic | −0.55 ± 0.12 | −0.08 ± 0.15 |
+| Mean JSD | −0.63 ± 0.08 | 0.01 ± 0.14 |
+| Correlation distance | −0.54 ± 0.12 | −0.00 ± 0.07 |
+| C2ST | −0.47 ± 0.13 | −0.18 ± 0.21 |
+| Aggregate fidelity score | −0.23 ± 0.13 | 0.04 ± 0.10 |
 
-These are observations from a single seed and dataset, not conclusions.
+What the pilot shows:
+
+- **Losses don't track utility.** Generator loss falls steeply for ~70 epochs while TSTR stays flat near 0.73; TSTR then rises to ~0.81 while the loss climbs back up.
+- **Several fidelity metrics track utility over a whole run, but no better than the epoch number does.** Most of the agreement is a shared time trend.
+- **No metric tracks check-to-check changes in utility.** Part of this is probably noise in per-check TSTR (2,000 synthetic rows).
+- **The naive aggregate score is the weakest signal.** Averaging in metrics that don't track utility (categorical TVD, excess point mass) dilutes the ones that do. C2ST is saturated near 1 throughout.
+- **Restoring the best-scoring checkpoint was worse than keeping the final epoch** (test TSTR 0.795 vs 0.812 on average; worse in 4 of 5 seeds). Training on real data gives 0.856. At default settings quality was still improving at epoch 150, so there was no degradation to detect.
+
+Takeaway: the default setting is the easy case. Comparing stopping rules only makes sense where quality actually degrades, so induced-failure and fragile regimes come next.
 
 ## Files
 
@@ -76,10 +88,12 @@ These are observations from a single seed and dataset, not conclusions.
 | `data.py` | Adult dataset download and loading |
 | `run_experiment.py` | runs one experiment and writes results |
 | `plot_results.py` | redraws a run's figure from its saved metrics |
+| `analyze_pilot.py` | aggregates several runs: correlations with utility, checkpoint selection, summary figure |
 
 ## Roadmap
 
-- [ ] Repeat runs across seeds and report variance
+- [x] Pilot: 5 seeds on Adult with per-check downstream utility
+- [ ] Estimate how much of per-check TSTR variation is sampling noise
 - [ ] Induce degradation deliberately (learning rate, batch size, category imbalance) and label its onset
 - [ ] Compare detectors on detection delay, false alarms and compute saved
 - [ ] Add more datasets (e.g. Covertype, a credit-default dataset)
@@ -90,7 +104,7 @@ These are observations from a single seed and dataset, not conclusions.
 - The aggregate score is an unweighted mean of metrics; the right combination is an open question.
 - CUSUM drift and threshold values are hand-picked, not calibrated.
 - The per-epoch hook relies on CTGAN's internal training loop, so the `ctgan` version is pinned.
-- Results so far come from single runs on one dataset.
+- Results so far come from one dataset, one model (CTGAN) and default settings.
 
 ## References
 
@@ -99,10 +113,6 @@ These are observations from a single seed and dataset, not conclusions.
 - Lopez-Paz & Oquab, *Revisiting Classifier Two-Sample Tests*, ICLR 2017.
 - Page, *Continuous Inspection Schemes*, Biometrika 1954.
 - Becker & Kohavi, *Adult* dataset, UCI Machine Learning Repository, 1996.
-
-## Acknowledgments
-
-The README and documentation of this code was created with the assistance of Claude
 
 ## License
 
