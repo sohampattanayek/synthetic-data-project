@@ -102,7 +102,7 @@ These are observations from a single seed and dataset, not conclusions.
 
 ## Acknowledgments
 
-Parts of the code and documentation in this repository were developed with assistance from Claude, an AI assistant made by Anthropic.
+The README and documentation of this code was created with the assistance of Claude
 
 ## License
 
