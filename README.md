@@ -114,6 +114,10 @@ Takeaway: the default setting is the easy case. Comparing stopping rules only ma
 - Page, *Continuous Inspection Schemes*, Biometrika 1954.
 - Becker & Kohavi, *Adult* dataset, UCI Machine Learning Repository, 1996.
 
+## Acknowledgments
+
+The README and documentation of this code was created with the assistance of Claude
+
 ## License
 
 GPL-3.0. See `LICENSE`.
