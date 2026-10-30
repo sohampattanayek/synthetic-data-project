@@ -1,0 +1,161 @@
+factor,seed,series,detected,false_alarm_pre_spike,delay,control_alarm,offline_break_epoch,offline_significant
+3,0,Aggregate fidelity score,True,False,6.0,False,90,True
+3,0,Mean KS,True,False,15.0,False,33,True
+3,0,Mean JSD,True,False,12.0,False,90,True
+3,0,Correlation distance,False,False,,False,93,True
+3,0,Pile-up,True,False,21.0,True,102,True
+3,0,Generator loss,True,False,3.0,True,30,True
+3,0,"TSTR, 1 sample",False,False,,False,84,True
+3,0,"TSTR, mean of 10",False,False,,False,75,True
+3,1,Aggregate fidelity score,True,False,3.0,False,87,True
+3,1,Mean KS,True,False,6.0,False,111,False
+3,1,Mean JSD,True,False,6.0,False,90,True
+3,1,Correlation distance,False,False,,False,117,True
+3,1,Pile-up,True,False,3.0,True,87,True
+3,1,Generator loss,True,False,3.0,True,36,True
+3,1,"TSTR, 1 sample",False,False,,False,90,True
+3,1,"TSTR, mean of 10",False,False,,False,93,True
+3,2,Aggregate fidelity score,True,False,24.0,False,90,True
+3,2,Mean KS,False,False,,False,63,True
+3,2,Mean JSD,True,False,9.0,False,90,True
+3,2,Correlation distance,True,False,18.0,False,129,True
+3,2,Pile-up,True,False,54.0,False,84,False
+3,2,Generator loss,True,False,6.0,True,27,True
+3,2,"TSTR, 1 sample",False,False,,False,81,True
+3,2,"TSTR, mean of 10",False,False,,False,72,True
+3,3,Aggregate fidelity score,False,False,,False,90,True
+3,3,Mean KS,True,False,6.0,False,111,False
+3,3,Mean JSD,True,False,9.0,False,90,True
+3,3,Correlation distance,False,False,,False,111,True
+3,3,Pile-up,False,False,,False,42,False
+3,3,Generator loss,True,False,3.0,True,33,True
+3,3,"TSTR, 1 sample",False,False,,False,84,True
+3,3,"TSTR, mean of 10",False,False,,False,75,True
+3,4,Aggregate fidelity score,True,False,6.0,False,90,True
+3,4,Mean KS,False,False,,False,105,True
+3,4,Mean JSD,True,False,6.0,False,90,True
+3,4,Correlation distance,True,False,24.0,True,129,True
+3,4,Pile-up,True,False,15.0,True,75,True
+3,4,Generator loss,True,False,9.0,True,33,True
+3,4,"TSTR, 1 sample",False,False,,False,66,True
+3,4,"TSTR, mean of 10",False,False,,False,84,True
+10,0,Aggregate fidelity score,True,False,3.0,False,90,True
+10,0,Mean KS,True,False,6.0,False,90,True
+10,0,Mean JSD,True,False,6.0,False,90,True
+10,0,Correlation distance,True,False,6.0,False,93,True
+10,0,Pile-up,True,False,12.0,True,93,True
+10,0,Generator loss,True,False,3.0,True,90,True
+10,0,"TSTR, 1 sample",False,False,,False,84,True
+10,0,"TSTR, mean of 10",False,False,,False,75,True
+10,1,Aggregate fidelity score,True,False,3.0,False,90,True
+10,1,Mean KS,True,False,3.0,False,90,True
+10,1,Mean JSD,True,False,3.0,False,90,True
+10,1,Correlation distance,True,False,9.0,False,93,True
+10,1,Pile-up,True,False,3.0,True,87,True
+10,1,Generator loss,True,False,3.0,True,90,True
+10,1,"TSTR, 1 sample",False,False,,False,84,False
+10,1,"TSTR, mean of 10",False,False,,False,84,True
+10,2,Aggregate fidelity score,True,False,6.0,False,90,True
+10,2,Mean KS,True,False,6.0,False,90,True
+10,2,Mean JSD,True,False,3.0,False,90,True
+10,2,Correlation distance,True,False,9.0,False,93,True
+10,2,Pile-up,True,False,9.0,False,90,True
+10,2,Generator loss,True,False,3.0,True,90,True
+10,2,"TSTR, 1 sample",False,False,,False,102,True
+10,2,"TSTR, mean of 10",True,False,12.0,False,102,True
+10,3,Aggregate fidelity score,True,False,3.0,False,90,True
+10,3,Mean KS,True,False,9.0,False,90,True
+10,3,Mean JSD,True,False,3.0,False,90,True
+10,3,Correlation distance,True,False,9.0,False,96,True
+10,3,Pile-up,True,False,21.0,False,90,False
+10,3,Generator loss,True,False,3.0,True,90,True
+10,3,"TSTR, 1 sample",False,False,,False,105,True
+10,3,"TSTR, mean of 10",False,False,,False,105,True
+10,4,Aggregate fidelity score,True,False,3.0,False,90,True
+10,4,Mean KS,True,False,3.0,False,90,True
+10,4,Mean JSD,True,False,3.0,False,90,True
+10,4,Correlation distance,True,False,15.0,True,102,True
+10,4,Pile-up,True,False,3.0,True,90,True
+10,4,Generator loss,True,False,3.0,True,90,True
+10,4,"TSTR, 1 sample",False,False,,False,66,True
+10,4,"TSTR, mean of 10",False,False,,False,66,True
+30,0,Aggregate fidelity score,True,False,3.0,False,90,True
+30,0,Mean KS,True,False,3.0,False,90,True
+30,0,Mean JSD,True,False,3.0,False,90,True
+30,0,Correlation distance,True,False,6.0,False,90,True
+30,0,Pile-up,True,False,3.0,True,90,True
+30,0,Generator loss,True,False,3.0,True,90,True
+30,0,"TSTR, 1 sample",False,False,,False,96,True
+30,0,"TSTR, mean of 10",True,False,3.0,False,93,True
+30,1,Aggregate fidelity score,True,False,3.0,False,90,True
+30,1,Mean KS,True,False,3.0,False,90,True
+30,1,Mean JSD,True,False,3.0,False,90,True
+30,1,Correlation distance,True,False,3.0,False,90,True
+30,1,Pile-up,True,False,3.0,True,87,True
+30,1,Generator loss,True,False,3.0,True,90,True
+30,1,"TSTR, 1 sample",False,False,,False,27,False
+30,1,"TSTR, mean of 10",False,False,,False,69,False
+30,2,Aggregate fidelity score,True,False,3.0,False,90,True
+30,2,Mean KS,True,False,3.0,False,90,True
+30,2,Mean JSD,True,False,3.0,False,90,True
+30,2,Correlation distance,True,False,6.0,False,93,True
+30,2,Pile-up,True,False,3.0,False,90,True
+30,2,Generator loss,True,False,3.0,True,90,True
+30,2,"TSTR, 1 sample",False,False,,False,66,True
+30,2,"TSTR, mean of 10",False,False,,False,99,True
+30,3,Aggregate fidelity score,True,False,3.0,False,90,True
+30,3,Mean KS,True,False,3.0,False,108,True
+30,3,Mean JSD,True,False,3.0,False,90,True
+30,3,Correlation distance,True,False,3.0,False,90,True
+30,3,Pile-up,True,False,3.0,False,90,True
+30,3,Generator loss,True,False,3.0,True,90,True
+30,3,"TSTR, 1 sample",True,False,6.0,False,96,True
+30,3,"TSTR, mean of 10",True,False,6.0,False,96,True
+30,4,Aggregate fidelity score,True,False,3.0,False,90,True
+30,4,Mean KS,True,False,3.0,False,90,True
+30,4,Mean JSD,True,False,3.0,False,90,True
+30,4,Correlation distance,True,False,6.0,True,87,True
+30,4,Pile-up,True,False,3.0,True,90,True
+30,4,Generator loss,True,False,3.0,True,90,True
+30,4,"TSTR, 1 sample",False,False,,False,102,True
+30,4,"TSTR, mean of 10",False,False,,False,102,True
+100,0,Aggregate fidelity score,True,False,3.0,False,90,True
+100,0,Mean KS,True,False,12.0,False,90,True
+100,0,Mean JSD,True,False,3.0,False,90,True
+100,0,Correlation distance,True,False,3.0,False,90,True
+100,0,Pile-up,True,False,3.0,True,90,True
+100,0,Generator loss,True,False,3.0,True,90,True
+100,0,"TSTR, 1 sample",False,False,,False,75,False
+100,0,"TSTR, mean of 10",True,False,12.0,False,102,True
+100,1,Aggregate fidelity score,True,False,3.0,False,87,True
+100,1,Mean KS,True,False,9.0,False,90,False
+100,1,Mean JSD,True,False,3.0,False,90,True
+100,1,Correlation distance,True,False,3.0,False,90,True
+100,1,Pile-up,True,False,3.0,True,87,False
+100,1,Generator loss,True,False,3.0,True,36,True
+100,1,"TSTR, 1 sample",True,False,42.0,False,102,True
+100,1,"TSTR, mean of 10",True,False,54.0,False,75,True
+100,2,Aggregate fidelity score,True,False,3.0,False,90,True
+100,2,Mean KS,True,False,3.0,False,90,True
+100,2,Mean JSD,True,False,3.0,False,90,True
+100,2,Correlation distance,True,False,6.0,False,93,True
+100,2,Pile-up,True,False,3.0,False,84,False
+100,2,Generator loss,True,False,3.0,True,90,True
+100,2,"TSTR, 1 sample",False,False,,False,66,True
+100,2,"TSTR, mean of 10",False,False,,False,66,True
+100,3,Aggregate fidelity score,True,False,3.0,False,90,True
+100,3,Mean KS,True,False,3.0,False,90,True
+100,3,Mean JSD,True,False,3.0,False,90,True
+100,3,Correlation distance,True,False,6.0,False,93,True
+100,3,Pile-up,True,False,3.0,False,90,True
+100,3,Generator loss,True,False,3.0,True,33,True
+100,3,"TSTR, 1 sample",False,False,,False,30,False
+100,3,"TSTR, mean of 10",False,False,,False,30,False
+100,4,Aggregate fidelity score,True,False,3.0,False,90,True
+100,4,Mean KS,True,False,3.0,False,90,True
+100,4,Mean JSD,True,False,3.0,False,90,True
+100,4,Correlation distance,True,False,6.0,True,87,True
+100,4,Pile-up,True,False,3.0,True,90,True
+100,4,Generator loss,True,False,3.0,True,36,True
+100,4,"TSTR, 1 sample",False,False,,False,90,True
+100,4,"TSTR, mean of 10",False,False,,False,90,True

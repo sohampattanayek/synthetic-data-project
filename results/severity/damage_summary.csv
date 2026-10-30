@@ -1,0 +1,5 @@
+factor,test_tstr_final_spiked,test_tstr_final_control,val_tstr_last5_spiked,val_tstr_last5_control,n
+3,0.7624,0.8085,0.7800,0.8018,5
+10,0.7627,0.8085,0.7684,0.8018,5
+30,0.7631,0.8085,0.7552,0.8018,5
+100,0.7434,0.8085,0.7212,0.8018,5

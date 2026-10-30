@@ -1,0 +1,6 @@
+seed,mean_sd_across_samples,expected_diff_sd_from_noise,observed_diff_sd_single,observed_diff_sd_mean10
+0,0.0163,0.0230,0.0307,0.0228
+1,0.0168,0.0237,0.0384,0.0333
+2,0.0167,0.0236,0.0641,0.0393
+3,0.0180,0.0254,0.0533,0.0443
+4,0.0173,0.0245,0.0679,0.0516

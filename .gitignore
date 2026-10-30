@@ -9,3 +9,9 @@ results/*
 !results/pilot_summary/
 !results/spike90_s*/
 !results/changepoints/
+!results/ctrl_s*/
+!results/spike90x*_s*/
+!results/severity/
+!results/stopping/
+!results/dependence/
+!results/dependence_ctrl/
