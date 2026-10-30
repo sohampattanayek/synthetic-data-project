@@ -60,6 +60,58 @@ def tstr_accuracy(train: pd.DataFrame, test: pd.DataFrame, target: str,
     return float(accuracy_score(test[target].astype(str), clf.predict(encode(test, ref))))
 
 
+def tstr_two_splits(train, val, test, target, categorical_cols, seed) -> tuple[float, float]:
+    """One classifier fitted on `train`, scored on both real splits."""
+    feats = [c for c in train.columns if c != target]
+    cats = [c for c in feats if c in categorical_cols]
+    ref = pd.concat([train, val, test])
+
+    def encode(df):
+        X = df[feats].copy()
+        for c in cats:
+            X[c] = pd.Categorical(X[c], categories=sorted(ref[c].unique())).codes
+        return X.to_numpy(dtype=float)
+
+    clf = HistGradientBoostingClassifier(
+        categorical_features=np.array([c in cats for c in feats]), random_state=seed)
+    clf.fit(encode(train), train[target].astype(str))
+    return (float(accuracy_score(val[target].astype(str), clf.predict(encode(val)))),
+            float(accuracy_score(test[target].astype(str), clf.predict(encode(test)))))
+
+
+def per_check_utility(synth, mon, val, test, cat_cols, seed, repeats, n_eval) -> dict:
+    """TSTR on the check's own sample (tstr_val, exactly as in the pilot), plus
+    optional repeats on fresh samples from the same generator:
+      tstr_rep_mean / tstr_rep_sd   validation TSTR over the repeats (noise estimate)
+      tstr_test_rep_mean            test TSTR over the same repeats
+
+    The test-split numbers are LOGGED ONLY and never used by the monitor. They
+    let any stopping/selection rule be simulated after the fact: whichever
+    check a rule picks, its test utility is already recorded.
+
+    The repeats draw extra random numbers, which would change the rest of the
+    training run. All RNG states are saved and restored around them, so a run
+    with repeats follows exactly the same trajectory as one without.
+    """
+    out = {"tstr_val": tstr_accuracy(synth, val, "income", cat_cols, seed)}
+    if repeats <= 0:
+        return out
+    states = (torch.get_rng_state(), np.random.get_state(), random.getstate())
+    try:
+        reps = np.array([tstr_two_splits(mon.sample(n_eval), val, test, "income", cat_cols, seed)
+                         for _ in range(repeats)])
+    finally:
+        torch.set_rng_state(states[0])
+        np.random.set_state(states[1])
+        random.setstate(states[2])
+    out.update({"tstr_rep_mean": float(reps[:, 0].mean()),
+                "tstr_rep_sd": float(reps[:, 0].std(ddof=1)) if repeats > 1 else np.nan,
+                "tstr_test_rep_mean": float(reps[:, 1].mean()),
+                "tstr_test_rep_sd": float(reps[:, 1].std(ddof=1)) if repeats > 1 else np.nan,
+                "tstr_rep_n": repeats})
+    return out
+
+
 def _round(obj, digits=5):
     if isinstance(obj, float):
         return float(f"{obj:.{digits}g}")
@@ -81,6 +133,9 @@ def main():
     ap.add_argument("--spike-epoch", type=int, default=None,
                     help="planted failure: multiply learning rates after this epoch")
     ap.add_argument("--spike-factor", type=float, default=100.0)
+    ap.add_argument("--tstr-repeats", type=int, default=0,
+                    help="extra fresh synthetic samples per check, each scored by TSTR, "
+                         "to measure how noisy per-check TSTR is (0 = off)")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--name", default=None, help="results subfolder name")
     args = ap.parse_args()
@@ -112,8 +167,8 @@ def main():
         batch_size=args.batch_size, generator_lr=args.lr, discriminator_lr=args.lr,
         verbose=True,
         lr_spike=(args.spike_epoch, args.spike_factor) if args.spike_epoch else None,
-        extra_metrics=lambda synth: {
-            "tstr_val": tstr_accuracy(synth, val, "income", cat_cols, args.seed)},
+        extra_metrics=lambda synth: per_check_utility(
+            synth, mon, val, test, cat_cols, args.seed, args.tstr_repeats, args.n_eval),
     )
     mon.fit(train, epochs=args.epochs)
     hist = mon.history_frame()
