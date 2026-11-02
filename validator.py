@@ -127,6 +127,85 @@ def c2st_score(real: pd.DataFrame, synth: pd.DataFrame,
     return float(2 * abs(auc - 0.5))
 
 
+class MMDProductKernel:
+    """Maximum mean discrepancy with a product kernel for mixed data.
+
+    Suggested by Prof. Ilmun Kim (Oct 31) as one option for mixed
+    numeric/categorical tables, because C2ST saturates: it answers *whether*
+    two distributions differ, not *by how much*. MMD^2 grows with the size
+    of the difference.
+
+        k(x, y) = exp(-||x_num - y_num||^2 / (2 h^2)) * exp(-d_H(x_cat, y_cat) / lam)
+
+    x_num are the numeric columns standardized with the TRAINING split's
+    mean and sd; d_H is the number of categorical columns that differ
+    (Hamming distance). The bandwidths h and lam are fixed once, from real
+    training rows only (median heuristic: median pairwise distance), so the
+    metric means the same thing at every check.
+
+    `mmd2` returns the unbiased estimate of MMD^2 (it can be slightly
+    negative when the two samples come from the same distribution).
+    Uses its own random generator, so it never touches the global RNG.
+    """
+
+    def __init__(self, real_train: pd.DataFrame, numeric_cols, categorical_cols,
+                 categories: dict | None = None, n_bandwidth: int = 1000, seed: int = 0):
+        self.numeric_cols = list(numeric_cols)
+        self.categorical_cols = list(categorical_cols)
+        self.mu = real_train[self.numeric_cols].mean().to_numpy(float)
+        self.sd = real_train[self.numeric_cols].std().replace(0, 1).to_numpy(float)
+        self.categories = categories or {
+            c: sorted(real_train[c].astype(str).unique()) for c in self.categorical_cols}
+        rng = np.random.default_rng(seed)
+        idx = rng.choice(len(real_train), size=min(n_bandwidth, len(real_train)), replace=False)
+        xn, xc = self._encode(real_train.iloc[idx])
+        iu = np.triu_indices(len(idx), k=1)
+        self.h = float(np.median(np.sqrt(_sq_dists(xn, xn)[iu])))
+        self.lam = float(np.median(_hamming(xc, xc)[iu]))
+        if not self.h > 0:
+            self.h = 1.0
+        if not self.lam > 0:
+            self.lam = 1.0
+
+    def _encode(self, df: pd.DataFrame):
+        xn = (df[self.numeric_cols].to_numpy(float) - self.mu) / self.sd
+        xc = np.column_stack([
+            pd.Categorical(df[c].astype(str), categories=self.categories[c]).codes
+            for c in self.categorical_cols]) if self.categorical_cols else np.zeros((len(df), 0), int)
+        return xn, xc
+
+    def kernel(self, a: pd.DataFrame, b: pd.DataFrame) -> np.ndarray:
+        an, ac = self._encode(a)
+        bn, bc = self._encode(b)
+        return self._kernel(an, ac, bn, bc)
+
+    def _kernel(self, an, ac, bn, bc):
+        return np.exp(-_sq_dists(an, bn) / (2 * self.h ** 2) - _hamming(ac, bc) / self.lam)
+
+    def mmd2(self, real: pd.DataFrame, synth: pd.DataFrame) -> float:
+        xn, xc = self._encode(real)
+        yn, yc = self._encode(synth)
+        m, n = len(xn), len(yn)
+        kxx = self._kernel(xn, xc, xn, xc)
+        kyy = self._kernel(yn, yc, yn, yc)
+        kxy = self._kernel(xn, xc, yn, yc)
+        return float((kxx.sum() - np.trace(kxx)) / (m * (m - 1))
+                     + (kyy.sum() - np.trace(kyy)) / (n * (n - 1))
+                     - 2 * kxy.mean())
+
+
+def _sq_dists(a: np.ndarray, b: np.ndarray) -> np.ndarray:
+    d = (a * a).sum(1)[:, None] + (b * b).sum(1)[None, :] - 2 * a @ b.T
+    return np.maximum(d, 0.0)
+
+
+def _hamming(a: np.ndarray, b: np.ndarray) -> np.ndarray:
+    out = np.zeros((len(a), len(b)), dtype=np.float32)
+    for j in range(a.shape[1]):
+        out += a[:, j][:, None] != b[:, j][None, :]
+    return out
+
+
 # ---------------------------------------------------------------------------
 # Full report
 # ---------------------------------------------------------------------------

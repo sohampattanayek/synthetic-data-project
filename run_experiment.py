@@ -20,6 +20,7 @@ from __future__ import annotations
 import argparse
 import json
 import random
+import time
 from pathlib import Path
 
 import numpy as np
@@ -32,7 +33,7 @@ from sklearn.model_selection import train_test_split
 from data import load_adult
 from monitor import MonitoredCTGAN, make_detector
 from plot_results import plot_run
-from validator import FidelityReport, aggregate
+from validator import FidelityReport, MMDProductKernel, aggregate
 
 
 def set_seed(seed: int):
@@ -112,6 +113,25 @@ def per_check_utility(synth, mon, val, test, cat_cols, seed, repeats, n_eval) ->
     return out
 
 
+def fidelity_extras(synth, val, report, mmd) -> dict:
+    """Optional extra fidelity logging (same synthetic sample as the check):
+      mmd2, mmd_seconds        product-kernel MMD^2 vs validation (Kim's suggestion)
+      col_ks__<c>, col_tvd__<c> per-column KS (numeric) / TVD (categorical)
+    Deterministic; uses no global random state."""
+    out = {}
+    if mmd is not None:
+        t0 = time.time()
+        out["mmd2"] = mmd.mmd2(val, synth)
+        out["mmd_seconds"] = time.time() - t0
+    if report is not None:
+        for r in report.per_column(val, synth).itertuples():
+            if r.type == "numeric":
+                out[f"col_ks__{r.column}"] = r.ks
+            else:
+                out[f"col_tvd__{r.column}"] = r.tvd
+    return out
+
+
 def _round(obj, digits=5):
     if isinstance(obj, float):
         return float(f"{obj:.{digits}g}")
@@ -136,6 +156,10 @@ def main():
     ap.add_argument("--tstr-repeats", type=int, default=0,
                     help="extra fresh synthetic samples per check, each scored by TSTR, "
                          "to measure how noisy per-check TSTR is (0 = off)")
+    ap.add_argument("--mmd", action="store_true",
+                    help="log product-kernel MMD^2 vs validation at every check")
+    ap.add_argument("--per-column", action="store_true",
+                    help="log per-column KS / TVD at every check")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--name", default=None, help="results subfolder name")
     args = ap.parse_args()
@@ -160,6 +184,10 @@ def main():
     noise_floor = aggregate(floor_summary)
     print(f"real-vs-real noise floor (aggregate score): {noise_floor:.4f}")
 
+    mmd = MMDProductKernel(train, num_cols, cat_cols, seed=args.seed) if args.mmd else None
+    if mmd is not None:
+        print(f"MMD bandwidths from training data: h = {mmd.h:.3f}, lambda = {mmd.lam:.3f}")
+
     mon = MonitoredCTGAN(
         real_eval=holdout, numeric_cols=num_cols, categorical_cols=cat_cols,
         check_every=args.check_every, n_eval=args.n_eval,
@@ -167,8 +195,10 @@ def main():
         batch_size=args.batch_size, generator_lr=args.lr, discriminator_lr=args.lr,
         verbose=True,
         lr_spike=(args.spike_epoch, args.spike_factor) if args.spike_epoch else None,
-        extra_metrics=lambda synth: per_check_utility(
-            synth, mon, val, test, cat_cols, args.seed, args.tstr_repeats, args.n_eval),
+        extra_metrics=lambda synth: {
+            **per_check_utility(synth, mon, val, test, cat_cols, args.seed,
+                                args.tstr_repeats, args.n_eval),
+            **fidelity_extras(synth, val, report if args.per_column else None, mmd)},
     )
     mon.fit(train, epochs=args.epochs)
     hist = mon.history_frame()

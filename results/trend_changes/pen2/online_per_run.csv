@@ -1,0 +1,251 @@
+run,condition,seed,series,model,alarm_epoch
+ctrl_s0,control,0,"TSTR, mean of 10",clinear,
+ctrl_s0,control,0,"TSTR, mean of 10",l2,
+ctrl_s0,control,0,Mean KS,clinear,69.0
+ctrl_s0,control,0,Mean KS,l2,
+ctrl_s0,control,0,Generator loss,clinear,75.0
+ctrl_s0,control,0,Generator loss,l2,129.0
+ctrl_s0,control,0,Mean JSD,clinear,57.0
+ctrl_s0,control,0,Mean JSD,l2,78.0
+ctrl_s0,control,0,Aggregate score,clinear,120.0
+ctrl_s0,control,0,Aggregate score,l2,
+ctrl_s1,control,1,"TSTR, mean of 10",clinear,78.0
+ctrl_s1,control,1,"TSTR, mean of 10",l2,
+ctrl_s1,control,1,Mean KS,clinear,147.0
+ctrl_s1,control,1,Mean KS,l2,
+ctrl_s1,control,1,Generator loss,clinear,81.0
+ctrl_s1,control,1,Generator loss,l2,105.0
+ctrl_s1,control,1,Mean JSD,clinear,72.0
+ctrl_s1,control,1,Mean JSD,l2,
+ctrl_s1,control,1,Aggregate score,clinear,147.0
+ctrl_s1,control,1,Aggregate score,l2,
+ctrl_s2,control,2,"TSTR, mean of 10",clinear,66.0
+ctrl_s2,control,2,"TSTR, mean of 10",l2,
+ctrl_s2,control,2,Mean KS,clinear,138.0
+ctrl_s2,control,2,Mean KS,l2,
+ctrl_s2,control,2,Generator loss,clinear,84.0
+ctrl_s2,control,2,Generator loss,l2,114.0
+ctrl_s2,control,2,Mean JSD,clinear,114.0
+ctrl_s2,control,2,Mean JSD,l2,
+ctrl_s2,control,2,Aggregate score,clinear,93.0
+ctrl_s2,control,2,Aggregate score,l2,
+ctrl_s3,control,3,"TSTR, mean of 10",clinear,135.0
+ctrl_s3,control,3,"TSTR, mean of 10",l2,51.0
+ctrl_s3,control,3,Mean KS,clinear,
+ctrl_s3,control,3,Mean KS,l2,
+ctrl_s3,control,3,Generator loss,clinear,78.0
+ctrl_s3,control,3,Generator loss,l2,
+ctrl_s3,control,3,Mean JSD,clinear,
+ctrl_s3,control,3,Mean JSD,l2,
+ctrl_s3,control,3,Aggregate score,clinear,
+ctrl_s3,control,3,Aggregate score,l2,
+ctrl_s4,control,4,"TSTR, mean of 10",clinear,57.0
+ctrl_s4,control,4,"TSTR, mean of 10",l2,
+ctrl_s4,control,4,Mean KS,clinear,
+ctrl_s4,control,4,Mean KS,l2,
+ctrl_s4,control,4,Generator loss,clinear,87.0
+ctrl_s4,control,4,Generator loss,l2,129.0
+ctrl_s4,control,4,Mean JSD,clinear,75.0
+ctrl_s4,control,4,Mean JSD,l2,
+ctrl_s4,control,4,Aggregate score,clinear,60.0
+ctrl_s4,control,4,Aggregate score,l2,
+spike90x3_s0,x3,0,"TSTR, mean of 10",clinear,126.0
+spike90x3_s0,x3,0,"TSTR, mean of 10",l2,129.0
+spike90x3_s0,x3,0,Mean KS,clinear,69.0
+spike90x3_s0,x3,0,Mean KS,l2,105.0
+spike90x3_s0,x3,0,Generator loss,clinear,75.0
+spike90x3_s0,x3,0,Generator loss,l2,96.0
+spike90x3_s0,x3,0,Mean JSD,clinear,57.0
+spike90x3_s0,x3,0,Mean JSD,l2,78.0
+spike90x3_s0,x3,0,Aggregate score,clinear,93.0
+spike90x3_s0,x3,0,Aggregate score,l2,102.0
+spike90x3_s1,x3,1,"TSTR, mean of 10",clinear,78.0
+spike90x3_s1,x3,1,"TSTR, mean of 10",l2,
+spike90x3_s1,x3,1,Mean KS,clinear,93.0
+spike90x3_s1,x3,1,Mean KS,l2,
+spike90x3_s1,x3,1,Generator loss,clinear,81.0
+spike90x3_s1,x3,1,Generator loss,l2,93.0
+spike90x3_s1,x3,1,Mean JSD,clinear,72.0
+spike90x3_s1,x3,1,Mean JSD,l2,96.0
+spike90x3_s1,x3,1,Aggregate score,clinear,93.0
+spike90x3_s1,x3,1,Aggregate score,l2,96.0
+spike90x3_s2,x3,2,"TSTR, mean of 10",clinear,66.0
+spike90x3_s2,x3,2,"TSTR, mean of 10",l2,
+spike90x3_s2,x3,2,Mean KS,clinear,93.0
+spike90x3_s2,x3,2,Mean KS,l2,
+spike90x3_s2,x3,2,Generator loss,clinear,84.0
+spike90x3_s2,x3,2,Generator loss,l2,93.0
+spike90x3_s2,x3,2,Mean JSD,clinear,93.0
+spike90x3_s2,x3,2,Mean JSD,l2,102.0
+spike90x3_s2,x3,2,Aggregate score,clinear,93.0
+spike90x3_s2,x3,2,Aggregate score,l2,114.0
+spike90x3_s3,x3,3,"TSTR, mean of 10",clinear,135.0
+spike90x3_s3,x3,3,"TSTR, mean of 10",l2,51.0
+spike90x3_s3,x3,3,Mean KS,clinear,93.0
+spike90x3_s3,x3,3,Mean KS,l2,96.0
+spike90x3_s3,x3,3,Generator loss,clinear,78.0
+spike90x3_s3,x3,3,Generator loss,l2,96.0
+spike90x3_s3,x3,3,Mean JSD,clinear,93.0
+spike90x3_s3,x3,3,Mean JSD,l2,96.0
+spike90x3_s3,x3,3,Aggregate score,clinear,93.0
+spike90x3_s3,x3,3,Aggregate score,l2,
+spike90x3_s4,x3,4,"TSTR, mean of 10",clinear,57.0
+spike90x3_s4,x3,4,"TSTR, mean of 10",l2,
+spike90x3_s4,x3,4,Mean KS,clinear,102.0
+spike90x3_s4,x3,4,Mean KS,l2,
+spike90x3_s4,x3,4,Generator loss,clinear,87.0
+spike90x3_s4,x3,4,Generator loss,l2,96.0
+spike90x3_s4,x3,4,Mean JSD,clinear,75.0
+spike90x3_s4,x3,4,Mean JSD,l2,96.0
+spike90x3_s4,x3,4,Aggregate score,clinear,60.0
+spike90x3_s4,x3,4,Aggregate score,l2,96.0
+spike90x10_s0,x10,0,"TSTR, mean of 10",clinear,102.0
+spike90x10_s0,x10,0,"TSTR, mean of 10",l2,
+spike90x10_s0,x10,0,Mean KS,clinear,69.0
+spike90x10_s0,x10,0,Mean KS,l2,96.0
+spike90x10_s0,x10,0,Generator loss,clinear,75.0
+spike90x10_s0,x10,0,Generator loss,l2,93.0
+spike90x10_s0,x10,0,Mean JSD,clinear,57.0
+spike90x10_s0,x10,0,Mean JSD,l2,78.0
+spike90x10_s0,x10,0,Aggregate score,clinear,93.0
+spike90x10_s0,x10,0,Aggregate score,l2,96.0
+spike90x10_s1,x10,1,"TSTR, mean of 10",clinear,78.0
+spike90x10_s1,x10,1,"TSTR, mean of 10",l2,
+spike90x10_s1,x10,1,Mean KS,clinear,93.0
+spike90x10_s1,x10,1,Mean KS,l2,96.0
+spike90x10_s1,x10,1,Generator loss,clinear,81.0
+spike90x10_s1,x10,1,Generator loss,l2,93.0
+spike90x10_s1,x10,1,Mean JSD,clinear,72.0
+spike90x10_s1,x10,1,Mean JSD,l2,93.0
+spike90x10_s1,x10,1,Aggregate score,clinear,93.0
+spike90x10_s1,x10,1,Aggregate score,l2,96.0
+spike90x10_s2,x10,2,"TSTR, mean of 10",clinear,66.0
+spike90x10_s2,x10,2,"TSTR, mean of 10",l2,99.0
+spike90x10_s2,x10,2,Mean KS,clinear,93.0
+spike90x10_s2,x10,2,Mean KS,l2,96.0
+spike90x10_s2,x10,2,Generator loss,clinear,84.0
+spike90x10_s2,x10,2,Generator loss,l2,93.0
+spike90x10_s2,x10,2,Mean JSD,clinear,93.0
+spike90x10_s2,x10,2,Mean JSD,l2,93.0
+spike90x10_s2,x10,2,Aggregate score,clinear,93.0
+spike90x10_s2,x10,2,Aggregate score,l2,96.0
+spike90x10_s3,x10,3,"TSTR, mean of 10",clinear,102.0
+spike90x10_s3,x10,3,"TSTR, mean of 10",l2,51.0
+spike90x10_s3,x10,3,Mean KS,clinear,93.0
+spike90x10_s3,x10,3,Mean KS,l2,96.0
+spike90x10_s3,x10,3,Generator loss,clinear,78.0
+spike90x10_s3,x10,3,Generator loss,l2,93.0
+spike90x10_s3,x10,3,Mean JSD,clinear,93.0
+spike90x10_s3,x10,3,Mean JSD,l2,93.0
+spike90x10_s3,x10,3,Aggregate score,clinear,93.0
+spike90x10_s3,x10,3,Aggregate score,l2,96.0
+spike90x10_s4,x10,4,"TSTR, mean of 10",clinear,57.0
+spike90x10_s4,x10,4,"TSTR, mean of 10",l2,
+spike90x10_s4,x10,4,Mean KS,clinear,93.0
+spike90x10_s4,x10,4,Mean KS,l2,96.0
+spike90x10_s4,x10,4,Generator loss,clinear,87.0
+spike90x10_s4,x10,4,Generator loss,l2,93.0
+spike90x10_s4,x10,4,Mean JSD,clinear,75.0
+spike90x10_s4,x10,4,Mean JSD,l2,93.0
+spike90x10_s4,x10,4,Aggregate score,clinear,60.0
+spike90x10_s4,x10,4,Aggregate score,l2,93.0
+spike90x30_s0,x30,0,"TSTR, mean of 10",clinear,93.0
+spike90x30_s0,x30,0,"TSTR, mean of 10",l2,93.0
+spike90x30_s0,x30,0,Mean KS,clinear,69.0
+spike90x30_s0,x30,0,Mean KS,l2,93.0
+spike90x30_s0,x30,0,Generator loss,clinear,75.0
+spike90x30_s0,x30,0,Generator loss,l2,93.0
+spike90x30_s0,x30,0,Mean JSD,clinear,57.0
+spike90x30_s0,x30,0,Mean JSD,l2,78.0
+spike90x30_s0,x30,0,Aggregate score,clinear,93.0
+spike90x30_s0,x30,0,Aggregate score,l2,93.0
+spike90x30_s1,x30,1,"TSTR, mean of 10",clinear,78.0
+spike90x30_s1,x30,1,"TSTR, mean of 10",l2,96.0
+spike90x30_s1,x30,1,Mean KS,clinear,93.0
+spike90x30_s1,x30,1,Mean KS,l2,93.0
+spike90x30_s1,x30,1,Generator loss,clinear,81.0
+spike90x30_s1,x30,1,Generator loss,l2,93.0
+spike90x30_s1,x30,1,Mean JSD,clinear,72.0
+spike90x30_s1,x30,1,Mean JSD,l2,93.0
+spike90x30_s1,x30,1,Aggregate score,clinear,93.0
+spike90x30_s1,x30,1,Aggregate score,l2,93.0
+spike90x30_s2,x30,2,"TSTR, mean of 10",clinear,66.0
+spike90x30_s2,x30,2,"TSTR, mean of 10",l2,99.0
+spike90x30_s2,x30,2,Mean KS,clinear,93.0
+spike90x30_s2,x30,2,Mean KS,l2,93.0
+spike90x30_s2,x30,2,Generator loss,clinear,84.0
+spike90x30_s2,x30,2,Generator loss,l2,93.0
+spike90x30_s2,x30,2,Mean JSD,clinear,93.0
+spike90x30_s2,x30,2,Mean JSD,l2,93.0
+spike90x30_s2,x30,2,Aggregate score,clinear,93.0
+spike90x30_s2,x30,2,Aggregate score,l2,93.0
+spike90x30_s3,x30,3,"TSTR, mean of 10",clinear,93.0
+spike90x30_s3,x30,3,"TSTR, mean of 10",l2,51.0
+spike90x30_s3,x30,3,Mean KS,clinear,93.0
+spike90x30_s3,x30,3,Mean KS,l2,93.0
+spike90x30_s3,x30,3,Generator loss,clinear,78.0
+spike90x30_s3,x30,3,Generator loss,l2,93.0
+spike90x30_s3,x30,3,Mean JSD,clinear,93.0
+spike90x30_s3,x30,3,Mean JSD,l2,93.0
+spike90x30_s3,x30,3,Aggregate score,clinear,93.0
+spike90x30_s3,x30,3,Aggregate score,l2,93.0
+spike90x30_s4,x30,4,"TSTR, mean of 10",clinear,57.0
+spike90x30_s4,x30,4,"TSTR, mean of 10",l2,96.0
+spike90x30_s4,x30,4,Mean KS,clinear,93.0
+spike90x30_s4,x30,4,Mean KS,l2,93.0
+spike90x30_s4,x30,4,Generator loss,clinear,87.0
+spike90x30_s4,x30,4,Generator loss,l2,93.0
+spike90x30_s4,x30,4,Mean JSD,clinear,75.0
+spike90x30_s4,x30,4,Mean JSD,l2,93.0
+spike90x30_s4,x30,4,Aggregate score,clinear,60.0
+spike90x30_s4,x30,4,Aggregate score,l2,93.0
+spike90x100_s0,x100,0,"TSTR, mean of 10",clinear,102.0
+spike90x100_s0,x100,0,"TSTR, mean of 10",l2,102.0
+spike90x100_s0,x100,0,Mean KS,clinear,69.0
+spike90x100_s0,x100,0,Mean KS,l2,105.0
+spike90x100_s0,x100,0,Generator loss,clinear,75.0
+spike90x100_s0,x100,0,Generator loss,l2,93.0
+spike90x100_s0,x100,0,Mean JSD,clinear,57.0
+spike90x100_s0,x100,0,Mean JSD,l2,78.0
+spike90x100_s0,x100,0,Aggregate score,clinear,93.0
+spike90x100_s0,x100,0,Aggregate score,l2,93.0
+spike90x100_s1,x100,1,"TSTR, mean of 10",clinear,78.0
+spike90x100_s1,x100,1,"TSTR, mean of 10",l2,144.0
+spike90x100_s1,x100,1,Mean KS,clinear,93.0
+spike90x100_s1,x100,1,Mean KS,l2,
+spike90x100_s1,x100,1,Generator loss,clinear,81.0
+spike90x100_s1,x100,1,Generator loss,l2,93.0
+spike90x100_s1,x100,1,Mean JSD,clinear,72.0
+spike90x100_s1,x100,1,Mean JSD,l2,93.0
+spike90x100_s1,x100,1,Aggregate score,clinear,93.0
+spike90x100_s1,x100,1,Aggregate score,l2,93.0
+spike90x100_s2,x100,2,"TSTR, mean of 10",clinear,66.0
+spike90x100_s2,x100,2,"TSTR, mean of 10",l2,
+spike90x100_s2,x100,2,Mean KS,clinear,93.0
+spike90x100_s2,x100,2,Mean KS,l2,93.0
+spike90x100_s2,x100,2,Generator loss,clinear,84.0
+spike90x100_s2,x100,2,Generator loss,l2,93.0
+spike90x100_s2,x100,2,Mean JSD,clinear,93.0
+spike90x100_s2,x100,2,Mean JSD,l2,93.0
+spike90x100_s2,x100,2,Aggregate score,clinear,93.0
+spike90x100_s2,x100,2,Aggregate score,l2,93.0
+spike90x100_s3,x100,3,"TSTR, mean of 10",clinear,102.0
+spike90x100_s3,x100,3,"TSTR, mean of 10",l2,51.0
+spike90x100_s3,x100,3,Mean KS,clinear,93.0
+spike90x100_s3,x100,3,Mean KS,l2,93.0
+spike90x100_s3,x100,3,Generator loss,clinear,78.0
+spike90x100_s3,x100,3,Generator loss,l2,93.0
+spike90x100_s3,x100,3,Mean JSD,clinear,93.0
+spike90x100_s3,x100,3,Mean JSD,l2,93.0
+spike90x100_s3,x100,3,Aggregate score,clinear,93.0
+spike90x100_s3,x100,3,Aggregate score,l2,93.0
+spike90x100_s4,x100,4,"TSTR, mean of 10",clinear,57.0
+spike90x100_s4,x100,4,"TSTR, mean of 10",l2,147.0
+spike90x100_s4,x100,4,Mean KS,clinear,93.0
+spike90x100_s4,x100,4,Mean KS,l2,93.0
+spike90x100_s4,x100,4,Generator loss,clinear,87.0
+spike90x100_s4,x100,4,Generator loss,l2,93.0
+spike90x100_s4,x100,4,Mean JSD,clinear,75.0
+spike90x100_s4,x100,4,Mean JSD,l2,93.0
+spike90x100_s4,x100,4,Aggregate score,clinear,60.0
+spike90x100_s4,x100,4,Aggregate score,l2,93.0

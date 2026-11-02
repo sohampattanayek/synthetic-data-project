@@ -15,3 +15,6 @@ results/*
 !results/stopping/
 !results/dependence/
 !results/dependence_ctrl/
+!results/trend_changes/
+!results/mmd/
+!results/mmd_analysis/

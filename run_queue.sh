@@ -5,7 +5,12 @@
 # Usage: bash run_queue.sh            (logs one line per finished run)
 set -u
 cd "$(dirname "$0")"
+mkdir -p "results/${PREFIX:-}"
 COMMON="--epochs 150 --check-every 3 --max-rows 10000 --n-eval 2000 --tstr-repeats 10"
+# Optional: PREFIX=mmd/ EXTRA="--mmd --per-column" bash run_queue.sh
+# reruns the same 25 runs into results/mmd/ with extra logging.
+PREFIX="${PREFIX:-}"
+COMMON="$COMMON ${EXTRA:-}"
 
 jobs=()
 for s in 0 1 2 3 4; do jobs+=("ctrl_s$s|--seed $s"); done
@@ -14,7 +19,7 @@ for f in 10 3 30 100; do
 done
 
 for j in "${jobs[@]}"; do
-  name="${j%%|*}"; args="${j#*|}"
+  name="${PREFIX}${j%%|*}"; args="${j#*|}"
   if [ -f "results/$name/summary.json" ]; then continue; fi
   t0=$(date +%s)
   if python run_experiment.py $COMMON $args --name "$name" > "results/$name.log" 2>&1; then
