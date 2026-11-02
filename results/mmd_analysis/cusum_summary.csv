@@ -1,0 +1,21 @@
+series,factor,detected,n,median_delay,alarm_before_spike,control_alarms
+Aggregate score,3,4,5,6.0,0,0
+Aggregate score,10,5,5,3.0,0,0
+Aggregate score,30,5,5,3.0,0,0
+Aggregate score,100,5,5,3.0,0,0
+C2ST,3,1,5,51.0,0,0
+C2ST,10,2,5,33.0,0,0
+C2ST,30,2,5,31.5,0,0
+C2ST,100,5,5,42.0,0,0
+MMD^2 (product kernel),3,5,5,9.0,0,0
+MMD^2 (product kernel),10,5,5,3.0,0,0
+MMD^2 (product kernel),30,5,5,3.0,0,0
+MMD^2 (product kernel),100,5,5,3.0,0,0
+Mean JSD,3,5,5,9.0,0,0
+Mean JSD,10,5,5,3.0,0,0
+Mean JSD,30,5,5,3.0,0,0
+Mean JSD,100,5,5,3.0,0,0
+Mean KS,3,3,5,6.0,0,0
+Mean KS,10,5,5,6.0,0,0
+Mean KS,30,5,5,3.0,0,0
+Mean KS,100,5,5,3.0,0,0
