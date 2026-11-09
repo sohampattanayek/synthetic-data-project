@@ -80,6 +80,63 @@ class CusumDetector:
         return self.t > self.warmup and self.g > self.threshold
 
 
+class RollbackRule:
+    """Roll back and continue: a change detector that only uses the past.
+
+    Self-starting one-sided CUSUM on one logged series (higher = worse). At
+    each check from epoch `start` on, the reference mean and sd come from all
+    earlier checks with epoch >= `burn_from` that are still "valid"; the
+    current check is never part of its own reference.
+
+        g_t = max(0, g_{t-1} + (x_t - mean) / sd - k),   alarm when g_t > h
+
+    On an alarm, `update` returns the epoch to restore: the last check at
+    which g was 0 (the estimated onset; the check before the alarm if g was
+    never 0). The checks after that epoch are dropped from the reference,
+    because the training that produced them is being undone, and g restarts
+    at 0. At most `max_rollbacks` alarms act; later ones are ignored.
+
+    `reset_lr`: after restoring, also set the learning rates back to their
+    configured values (True), or keep whatever they are now (False).
+    """
+
+    def __init__(self, series: str = "mmd2", h: float = 5.0, k: float = 0.5,
+                 burn_from: int = 30, start: int = 48, max_rollbacks: int = 3,
+                 reset_lr: bool = True):
+        self.series, self.h, self.k = series, h, k
+        self.burn_from, self.start = burn_from, start
+        self.max_rollbacks, self.reset_lr = max_rollbacks, reset_lr
+        self.epochs: list[int] = []
+        self.values: list[float] = []
+        self.g, self.last_zero, self.n_rollbacks = 0.0, None, 0
+        self.g_before_reset = 0.0
+
+    def update(self, epoch: int, value: float):
+        """Returns the epoch to restore, or None."""
+        ref = [v for e, v in zip(self.epochs, self.values) if e >= self.burn_from]
+        self.epochs.append(epoch)
+        self.values.append(value)
+        self.g_before_reset = self.g
+        if epoch < self.start or len(ref) < 4:
+            return None
+        mu, sd = float(np.mean(ref)), float(np.std(ref, ddof=1))
+        if not sd > 0:
+            return None
+        self.g = max(0.0, self.g + (value - mu) / sd - self.k)
+        self.g_before_reset = self.g
+        if self.g == 0.0:
+            self.last_zero = epoch
+        if self.g > self.h and self.n_rollbacks < self.max_rollbacks:
+            onset = self.last_zero if self.last_zero is not None else self.epochs[-2]
+            keep = [i for i, e in enumerate(self.epochs) if e <= onset]
+            self.epochs = [self.epochs[i] for i in keep]
+            self.values = [self.values[i] for i in keep]
+            self.g, self.last_zero = 0.0, onset
+            self.n_rollbacks += 1
+            return onset
+        return None
+
+
 def make_detector(name: str, **kw):
     return {"none": NoDetector, "patience": PatienceDetector,
             "cusum": CusumDetector}[name](**kw)
@@ -94,6 +151,7 @@ class MonitoredCTGAN:
                  check_every: int = 1, n_eval: int = 2000, detector=None,
                  seed: int = 0, verbose: bool = True, extra_metrics=None,
                  lr_spike: tuple[int, float] | None = None,
+                 rollback: dict | None = None,
                  **ctgan_kwargs):
         self.real_eval = real_eval
         self.categorical_cols = list(categorical_cols)
@@ -110,6 +168,12 @@ class MonitoredCTGAN:
         # break point whose location is known exactly.
         self.lr_spike = lr_spike
         self._optimizers = []
+        # Optional roll-back-and-continue rule (see RollbackRule). A dict with
+        # keys: series, h, k, burn_from, start, max_rollbacks, reset_lr.
+        self.rollback = RollbackRule(**rollback) if rollback else None
+        self._snapshots: dict[int, dict] = {}
+        self._base_lrs: list[list[float]] | None = None
+        self.rollbacks: list[dict] = []
         self.model = CTGAN(**ctgan_kwargs)
 
         self.history: list[dict] = []
@@ -151,9 +215,12 @@ class MonitoredCTGAN:
         extra = self.extra_metrics(synth) if self.extra_metrics else {}
 
         stop = self.detector.update(score)
-        self.history.append({"epoch": epoch, **summary, "score": score,
-                             "g_loss": g_loss, "d_loss": d_loss, **extra,
-                             "alarm": stop, "eval_seconds": time.time() - t0})
+        row = {"epoch": epoch, **summary, "score": score,
+               "g_loss": g_loss, "d_loss": d_loss, **extra, "alarm": stop}
+        if self.rollback:
+            row.update(self._rollback_step(epoch, row))
+        row["eval_seconds"] = time.time() - t0
+        self.history.append(row)
         if self.verbose:
             print(f"epoch {epoch:4d} | score {score:.4f} | KS {summary['ks_mean']:.3f} "
                   f"| C2ST {summary['c2st']:.3f} | pile-up {summary['excess_point_mass_max']:.3f}"
@@ -162,6 +229,51 @@ class MonitoredCTGAN:
         if stop:
             self.stopped_epoch = epoch
         return stop
+
+    # -- roll back and continue ---------------------------------------------
+    def _all_params(self, opt):
+        return [p for g in opt.param_groups for p in g["params"]]
+
+    def _snapshot(self) -> dict:
+        """Everything needed to resume training from this check: generator
+        (weights + batch-norm statistics), every parameter the two optimizers
+        own (this is how the discriminator, a local variable inside CTGAN's
+        fit(), is reached), and both Adam states."""
+        return {"gen": copy.deepcopy(self.model._generator.state_dict()),
+                "params": [[p.detach().clone() for p in self._all_params(o)] for o in self._optimizers],
+                "opt": [copy.deepcopy(o.state_dict()) for o in self._optimizers]}
+
+    def _restore(self, snap: dict, reset_lr: bool):
+        current = [[g["lr"] for g in o.param_groups] for o in self._optimizers]
+        self.model._generator.load_state_dict(snap["gen"])
+        for i, o in enumerate(self._optimizers):
+            with torch.no_grad():
+                for p, saved in zip(self._all_params(o), snap["params"][i]):
+                    p.copy_(saved)
+            o.load_state_dict(copy.deepcopy(snap["opt"][i]))
+            for g, lr0, lr_now in zip(o.param_groups, self._base_lrs[i], current[i]):
+                g["lr"] = lr0 if reset_lr else lr_now
+
+    def _rollback_step(self, epoch: int, row: dict) -> dict:
+        if len(self._optimizers) != 2:
+            raise RuntimeError("could not find CTGAN's two optimizers for the rollback rule")
+        if self._base_lrs is None:
+            raise RuntimeError("base learning rates were not recorded")
+        rule = self.rollback
+        self._snapshots[epoch] = self._snapshot()
+        onset = rule.update(epoch, float(row[rule.series]))
+        out = {"cusum_g": rule.g_before_reset, "rollback_to": np.nan}
+        if onset is not None:
+            self._restore(self._snapshots[onset], rule.reset_lr)
+            for e in [e for e in self._snapshots if e > onset]:
+                del self._snapshots[e]
+            self.rollbacks.append({"alarm_epoch": epoch, "restored_epoch": onset})
+            out["rollback_to"] = onset
+            if self.verbose:
+                print(f"--- epoch {epoch}: ALARM on {rule.series}; restored the epoch-{onset} "
+                      f"checkpoint and continuing"
+                      + (" at the configured learning rate" if rule.reset_lr else "") + " ---", flush=True)
+        return out
 
     @contextmanager
     def _patched_epoch_iterator(self):
@@ -185,11 +297,13 @@ class MonitoredCTGAN:
         # learning-rate spike can reach them.
         original_optim = _ctgan_module.optim
         registry = self._optimizers
+        monitor = self
 
         class _RecordingAdam(original_optim.Adam):
             def __init__(self, *a, **k):
                 super().__init__(*a, **k)
                 registry.append(self)
+                monitor._base_lrs = [[g["lr"] for g in o.param_groups] for o in registry]
 
         class _OptimShim:
             Adam = _RecordingAdam

@@ -12,10 +12,14 @@ COMMON="--epochs 150 --check-every 3 --max-rows 10000 --n-eval 2000 --tstr-repea
 PREFIX="${PREFIX:-}"
 COMMON="$COMMON ${EXTRA:-}"
 
+# Optional: SEEDS="5 6 7 8 9" FACTORS="10 100" to run other seeds / spike sizes.
+SEEDS="${SEEDS:-0 1 2 3 4}"
+FACTORS="${FACTORS:-10 3 30 100}"
+
 jobs=()
-for s in 0 1 2 3 4; do jobs+=("ctrl_s$s|--seed $s"); done
-for f in 10 3 30 100; do
-  for s in 0 1 2 3 4; do jobs+=("spike90x${f}_s$s|--seed $s --spike-epoch 90 --spike-factor $f"); done
+for s in $SEEDS; do jobs+=("ctrl_s$s|--seed $s"); done
+for f in $FACTORS; do
+  for s in $SEEDS; do jobs+=("spike90x${f}_s$s|--seed $s --spike-epoch 90 --spike-factor $f"); done
 done
 
 for j in "${jobs[@]}"; do

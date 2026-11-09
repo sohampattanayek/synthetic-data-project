@@ -160,6 +160,15 @@ def main():
                     help="log product-kernel MMD^2 vs validation at every check")
     ap.add_argument("--per-column", action="store_true",
                     help="log per-column KS / TVD at every check")
+    ap.add_argument("--rollback-series", default=None,
+                    help="roll back and continue: run a past-only CUSUM on this logged "
+                         "column (e.g. mmd2, score); on an alarm restore the checkpoint "
+                         "from the estimated onset and keep training")
+    ap.add_argument("--rollback-h", type=float, default=5.0, help="CUSUM threshold (in sds)")
+    ap.add_argument("--rollback-max", type=int, default=3, help="most rollbacks per run")
+    ap.add_argument("--rollback-keep-lr", action="store_true",
+                    help="after a rollback keep the current learning rate instead of "
+                         "resetting it to the configured one")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--name", default=None, help="results subfolder name")
     args = ap.parse_args()
@@ -195,6 +204,9 @@ def main():
         batch_size=args.batch_size, generator_lr=args.lr, discriminator_lr=args.lr,
         verbose=True,
         lr_spike=(args.spike_epoch, args.spike_factor) if args.spike_epoch else None,
+        rollback=dict(series=args.rollback_series, h=args.rollback_h,
+                      max_rollbacks=args.rollback_max,
+                      reset_lr=not args.rollback_keep_lr) if args.rollback_series else None,
         extra_metrics=lambda synth: {
             **per_check_utility(synth, mon, val, test, cat_cols, args.seed,
                                 args.tstr_repeats, args.n_eval),
@@ -224,6 +236,7 @@ def main():
         "epochs_trained": last_epoch,
         "stopped_early_at": mon.stopped_epoch,
         "best_epoch": mon.best_epoch,
+        "rollbacks": mon.rollbacks,
         "noise_floor": {"score": noise_floor, **floor_summary},
         "final": {"score": aggregate(final_summary), **final_summary},
         "best_checkpoint": {"score": aggregate(best_summary), **best_summary},
