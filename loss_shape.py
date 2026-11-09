@@ -46,7 +46,7 @@ SERIES = {"g_loss": "Generator loss", "tstr_rep_mean": "TSTR, mean of 10",
           "score": "Aggregate score"}
 SPIKE = 90
 START = 45
-PEN_GRID = [0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 6.0]
+PEN_GRID = [0.05, 0.1, 0.2, 0.3, 0.5, 0.75, 1.0, 1.5, 2.0, 3.0]
 
 
 def model_bics(y, ep):

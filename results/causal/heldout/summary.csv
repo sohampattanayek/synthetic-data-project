@@ -1,0 +1,141 @@
+series,detector,h,detected,n_spiked,alarm_before_spike,median_delay,control_alarms,n_controls
+Aggregate score,expanding,3.0,12,20,8,3.0,2,5
+Aggregate score,expanding,4.0,20,20,0,3.0,0,5
+Aggregate score,expanding,5.0,20,20,0,3.0,0,5
+Aggregate score,expanding,6.0,20,20,0,3.0,0,5
+Aggregate score,expanding,8.0,15,20,0,3.0,0,5
+Aggregate score,fixed,3.0,8,20,12,4.5,3,5
+Aggregate score,fixed,4.0,16,20,4,3.0,1,5
+Aggregate score,fixed,5.0,16,20,4,3.0,1,5
+Aggregate score,fixed,6.0,16,20,4,3.0,1,5
+Aggregate score,fixed,8.0,18,20,0,3.0,0,5
+Aggregate score,lookahead,3.0,20,20,0,3.0,1,5
+Aggregate score,lookahead,4.0,20,20,0,3.0,0,5
+Aggregate score,lookahead,5.0,20,20,0,3.0,0,5
+Aggregate score,lookahead,6.0,20,20,0,3.0,0,5
+Aggregate score,lookahead,8.0,19,20,0,6.0,0,5
+Aggregate score,rolling,3.0,8,20,12,3.0,4,5
+Aggregate score,rolling,4.0,16,20,4,3.0,1,5
+Aggregate score,rolling,5.0,17,20,0,3.0,0,5
+Aggregate score,rolling,6.0,17,20,0,3.0,0,5
+Aggregate score,rolling,8.0,15,20,0,3.0,0,5
+Correlation distance,expanding,3.0,9,20,8,3.0,3,5
+Correlation distance,expanding,4.0,12,20,4,3.0,2,5
+Correlation distance,expanding,5.0,15,20,0,3.0,1,5
+Correlation distance,expanding,6.0,15,20,0,3.0,0,5
+Correlation distance,expanding,8.0,15,20,0,6.0,0,5
+Correlation distance,fixed,3.0,12,20,4,3.0,2,5
+Correlation distance,fixed,4.0,12,20,4,3.0,2,5
+Correlation distance,fixed,5.0,12,20,4,3.0,2,5
+Correlation distance,fixed,6.0,12,20,4,3.0,2,5
+Correlation distance,fixed,8.0,12,20,4,3.0,2,5
+Correlation distance,lookahead,3.0,15,20,0,3.0,1,5
+Correlation distance,lookahead,4.0,15,20,0,6.0,1,5
+Correlation distance,lookahead,5.0,15,20,0,6.0,1,5
+Correlation distance,lookahead,6.0,15,20,0,6.0,0,5
+Correlation distance,lookahead,8.0,15,20,0,6.0,0,5
+Correlation distance,rolling,3.0,12,20,4,3.0,3,5
+Correlation distance,rolling,4.0,12,20,4,3.0,2,5
+Correlation distance,rolling,5.0,12,20,4,3.0,2,5
+Correlation distance,rolling,6.0,15,20,0,6.0,1,5
+Correlation distance,rolling,8.0,15,20,0,6.0,0,5
+Generator loss,expanding,3.0,20,20,0,3.0,4,5
+Generator loss,expanding,4.0,20,20,0,3.0,3,5
+Generator loss,expanding,5.0,20,20,0,3.0,3,5
+Generator loss,expanding,6.0,20,20,0,3.0,2,5
+Generator loss,expanding,8.0,20,20,0,3.0,2,5
+Generator loss,fixed,3.0,20,20,0,3.0,1,5
+Generator loss,fixed,4.0,20,20,0,3.0,0,5
+Generator loss,fixed,5.0,20,20,0,3.0,0,5
+Generator loss,fixed,6.0,20,20,0,3.0,0,5
+Generator loss,fixed,8.0,20,20,0,3.0,0,5
+Generator loss,lookahead,3.0,20,20,0,3.0,5,5
+Generator loss,lookahead,4.0,20,20,0,3.0,5,5
+Generator loss,lookahead,5.0,20,20,0,3.0,5,5
+Generator loss,lookahead,6.0,20,20,0,3.0,5,5
+Generator loss,lookahead,8.0,20,20,0,3.0,5,5
+Generator loss,rolling,3.0,12,20,8,3.0,5,5
+Generator loss,rolling,4.0,16,20,4,3.0,5,5
+Generator loss,rolling,5.0,16,20,4,3.0,5,5
+Generator loss,rolling,6.0,16,20,4,3.0,4,5
+Generator loss,rolling,8.0,20,20,0,3.0,4,5
+MMD^2,expanding,3.0,4,20,16,3.0,4,5
+MMD^2,expanding,4.0,8,20,12,3.0,3,5
+MMD^2,expanding,5.0,12,20,8,3.0,2,5
+MMD^2,expanding,6.0,16,20,4,3.0,1,5
+MMD^2,expanding,8.0,14,20,4,3.0,1,5
+MMD^2,fixed,3.0,4,20,16,3.0,4,5
+MMD^2,fixed,4.0,4,20,16,3.0,4,5
+MMD^2,fixed,5.0,4,20,16,3.0,4,5
+MMD^2,fixed,6.0,4,20,16,3.0,4,5
+MMD^2,fixed,8.0,12,20,8,3.0,2,5
+MMD^2,lookahead,3.0,20,20,0,3.0,0,5
+MMD^2,lookahead,4.0,20,20,0,3.0,0,5
+MMD^2,lookahead,5.0,20,20,0,3.0,0,5
+MMD^2,lookahead,6.0,20,20,0,3.0,0,5
+MMD^2,lookahead,8.0,20,20,0,3.0,0,5
+MMD^2,rolling,3.0,4,20,16,3.0,4,5
+MMD^2,rolling,4.0,12,20,8,3.0,2,5
+MMD^2,rolling,5.0,19,20,0,3.0,0,5
+MMD^2,rolling,6.0,18,20,0,3.0,0,5
+MMD^2,rolling,8.0,16,20,0,3.0,0,5
+Mean JSD,expanding,3.0,8,20,12,3.0,3,5
+Mean JSD,expanding,4.0,16,20,4,3.0,1,5
+Mean JSD,expanding,5.0,16,20,4,3.0,1,5
+Mean JSD,expanding,6.0,16,20,4,3.0,1,5
+Mean JSD,expanding,8.0,20,20,0,3.0,0,5
+Mean JSD,fixed,3.0,8,20,12,3.0,3,5
+Mean JSD,fixed,4.0,16,20,4,3.0,1,5
+Mean JSD,fixed,5.0,16,20,4,3.0,1,5
+Mean JSD,fixed,6.0,16,20,4,3.0,1,5
+Mean JSD,fixed,8.0,16,20,4,3.0,1,5
+Mean JSD,lookahead,3.0,20,20,0,3.0,0,5
+Mean JSD,lookahead,4.0,20,20,0,3.0,0,5
+Mean JSD,lookahead,5.0,20,20,0,3.0,0,5
+Mean JSD,lookahead,6.0,20,20,0,3.0,0,5
+Mean JSD,lookahead,8.0,20,20,0,3.0,0,5
+Mean JSD,rolling,3.0,20,20,0,3.0,1,5
+Mean JSD,rolling,4.0,20,20,0,3.0,0,5
+Mean JSD,rolling,5.0,20,20,0,3.0,0,5
+Mean JSD,rolling,6.0,20,20,0,3.0,0,5
+Mean JSD,rolling,8.0,19,20,0,3.0,0,5
+Mean KS,expanding,3.0,15,20,4,3.0,1,5
+Mean KS,expanding,4.0,18,20,0,3.0,0,5
+Mean KS,expanding,5.0,18,20,0,3.0,0,5
+Mean KS,expanding,6.0,17,20,0,3.0,0,5
+Mean KS,expanding,8.0,15,20,0,3.0,0,5
+Mean KS,fixed,3.0,14,20,4,3.0,1,5
+Mean KS,fixed,4.0,14,20,4,3.0,1,5
+Mean KS,fixed,5.0,14,20,4,4.5,1,5
+Mean KS,fixed,6.0,14,20,4,6.0,1,5
+Mean KS,fixed,8.0,14,20,4,6.0,1,5
+Mean KS,lookahead,3.0,19,20,0,3.0,0,5
+Mean KS,lookahead,4.0,19,20,0,3.0,0,5
+Mean KS,lookahead,5.0,19,20,0,3.0,0,5
+Mean KS,lookahead,6.0,19,20,0,6.0,0,5
+Mean KS,lookahead,8.0,18,20,0,4.5,0,5
+Mean KS,rolling,3.0,19,20,0,3.0,0,5
+Mean KS,rolling,4.0,18,20,0,3.0,0,5
+Mean KS,rolling,5.0,17,20,0,3.0,0,5
+Mean KS,rolling,6.0,14,20,0,3.0,0,5
+Mean KS,rolling,8.0,12,20,0,3.0,0,5
+"TSTR, mean of 10",expanding,3.0,6,20,4,9.0,1,5
+"TSTR, mean of 10",expanding,4.0,5,20,4,9.0,1,5
+"TSTR, mean of 10",expanding,5.0,7,20,0,9.0,0,5
+"TSTR, mean of 10",expanding,6.0,3,20,0,6.0,0,5
+"TSTR, mean of 10",expanding,8.0,1,20,0,12.0,0,5
+"TSTR, mean of 10",fixed,3.0,5,20,4,9.0,1,5
+"TSTR, mean of 10",fixed,4.0,4,20,4,7.5,1,5
+"TSTR, mean of 10",fixed,5.0,4,20,4,7.5,1,5
+"TSTR, mean of 10",fixed,6.0,2,20,4,19.5,1,5
+"TSTR, mean of 10",fixed,8.0,4,20,0,9.0,0,5
+"TSTR, mean of 10",lookahead,3.0,10,20,0,9.0,0,5
+"TSTR, mean of 10",lookahead,4.0,8,20,0,9.0,0,5
+"TSTR, mean of 10",lookahead,5.0,8,20,0,10.5,0,5
+"TSTR, mean of 10",lookahead,6.0,6,20,0,9.0,0,5
+"TSTR, mean of 10",lookahead,8.0,3,20,0,27.0,0,5
+"TSTR, mean of 10",rolling,3.0,13,20,4,15.0,1,5
+"TSTR, mean of 10",rolling,4.0,8,20,4,27.0,1,5
+"TSTR, mean of 10",rolling,5.0,6,20,4,18.0,1,5
+"TSTR, mean of 10",rolling,6.0,4,20,4,21.0,1,5
+"TSTR, mean of 10",rolling,8.0,2,20,0,7.5,0,5

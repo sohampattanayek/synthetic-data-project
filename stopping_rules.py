@@ -25,6 +25,15 @@ Rules
                           onset: the last check before the CUSUM sum started
                           its final climb (g was 0)
   cusum_ks_onset          same with mean KS
+  past_score_onset        like cusum_score_onset, but the detector only uses the
+                          past (self-starting: reference = all earlier checks
+                          from epoch 30; see causal_detection.py). This is the
+                          version a monitor could run during training.
+  past_score_best         same alarm, keep the best-score checkpoint so far
+  past_ks_onset           past-only detector on mean KS, keep the onset
+  past_mmd_roll_onset     past-only detector on MMD^2 with a rolling reference
+                          (previous 12 checks), keep the onset; only if the
+                          run logged MMD^2
   oracle                  keep the checkpoint with the best test TSTR (upper bound)
 
 Usage:
@@ -39,6 +48,9 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from scipy import stats
+
+from causal_detection import cusum_alarm
 
 REF = (45, 87)
 START = 48
@@ -105,9 +117,30 @@ def simulate(m: pd.DataFrame) -> dict:
             picks[name] = (last, last)
         else:
             picks[name] = (a, argbest(score, a) if keep == "best" else onset)
+    past = [("past_score_onset", score, "expanding", "onset"),
+            ("past_score_best", score, "expanding", "best"),
+            ("past_ks_onset", ks, "expanding", "onset")]
+    if "mmd2" in m:
+        past.append(("past_mmd_roll_onset", m["mmd2"].to_numpy(float), "rolling", "onset"))
+    for name, x, mode, keep in past:
+        a, onset = cusum_alarm(x, ep, +1, H_SD, mode)
+        if a is None:
+            picks[name] = (last, last)
+        else:
+            ai, oi = int(np.where(ep == a)[0][0]), int(np.where(ep == onset)[0][0])
+            picks[name] = (ai, argbest(score, ai) if keep == "best" else oi)
     picks["oracle"] = (last, argbest(m[TARGET].to_numpy(float), last, lower_better=False))
     return {r: {"stop_epoch": int(ep[s]), "kept_epoch": int(ep[k]),
                 "test_tstr": float(m[TARGET].iloc[k])} for r, (s, k) in picks.items()}
+
+
+def ci95(v):
+    """Half-width of the 95% t-interval for the mean of paired differences
+    across seeds (small n, so read it loosely)."""
+    v = np.asarray(v, float)
+    if len(v) < 2:
+        return np.nan
+    return float(stats.t.ppf(0.975, len(v) - 1) * v.std(ddof=1) / np.sqrt(len(v)))
 
 
 def condition_of(name: str) -> str:
@@ -139,7 +172,7 @@ def main():
     df["vs_fixed"] = df.test_tstr - fixed.reindex(df.run).to_numpy()
     summ = df.groupby(["condition", "rule"]).agg(
         n=("run", "size"), test_tstr=("test_tstr", "mean"), regret=("regret", "mean"),
-        vs_fixed=("vs_fixed", "mean"),
+        vs_fixed=("vs_fixed", "mean"), vs_fixed_ci95=("vs_fixed", ci95),
         beats_fixed=("vs_fixed", lambda v: int((v > 0).sum())),
         mean_stop_epoch=("stop_epoch", "mean")).reset_index()
     summ.to_csv(out / "summary.csv", index=False, float_format="%.4f")

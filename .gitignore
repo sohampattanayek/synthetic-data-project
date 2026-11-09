@@ -18,3 +18,7 @@ results/*
 !results/trend_changes/
 !results/mmd/
 !results/mmd_analysis/
+!results/causal/
+!results/loss_shape/
+!results/stopping10/
+!results/rollback/

@@ -104,12 +104,16 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--runs-dir", default="results/mmd")
     ap.add_argument("--out", default="results/causal")
+    ap.add_argument("--seeds", type=int, nargs="*", default=None,
+                    help="only these seeds (e.g. the held-out seeds 5-9)")
     args = ap.parse_args()
     runs_dir, out = Path(args.runs_dir), Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
 
     rows = []
     for name, cond, factor, seed in run_names(runs_dir):
+        if args.seeds and seed not in args.seeds:
+            continue
         m = pd.read_csv(runs_dir / name / "metrics.csv")
         ep = m["epoch"].to_numpy()
         for col, (label, direction) in SERIES.items():

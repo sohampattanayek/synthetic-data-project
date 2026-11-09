@@ -16,8 +16,10 @@ COMMON="$COMMON ${EXTRA:-}"
 SEEDS="${SEEDS:-0 1 2 3 4}"
 FACTORS="${FACTORS:-10 3 30 100}"
 
+# CONTROLS=0 skips the unspiked controls (e.g. for the roll-back runs:
+#   CONTROLS=0 PREFIX=rollback/ EXTRA="--mmd --per-column --rollback-series mmd2" bash run_queue.sh)
 jobs=()
-for s in $SEEDS; do jobs+=("ctrl_s$s|--seed $s"); done
+if [ "${CONTROLS:-1}" = 1 ]; then for s in $SEEDS; do jobs+=("ctrl_s$s|--seed $s"); done; fi
 for f in $FACTORS; do
   for s in $SEEDS; do jobs+=("spike90x${f}_s$s|--seed $s --spike-epoch 90 --spike-factor $f"); done
 done

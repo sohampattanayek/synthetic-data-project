@@ -1,0 +1,7 @@
+series,broken_trend,constant,mean_shift,quadratic,trend
+Aggregate score,0,7,2,0,1
+Generator loss,10,0,0,0,0
+MMD^2,2,0,3,0,5
+Mean JSD,0,0,2,1,7
+Mean KS,0,0,2,1,7
+"TSTR, mean of 10",8,0,2,0,0
