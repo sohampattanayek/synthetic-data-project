@@ -14,7 +14,7 @@ COMMON="$COMMON ${EXTRA:-}"
 
 # Optional: SEEDS="5 6 7 8 9" FACTORS="10 100" to run other seeds / spike sizes.
 SEEDS="${SEEDS:-0 1 2 3 4}"
-FACTORS="${FACTORS:-10 3 30 100}"
+FACTORS="${FACTORS-10 3 30 100}"
 
 # CONTROLS=0 skips the unspiked controls (e.g. for the roll-back runs:
 #   CONTROLS=0 PREFIX=rollback/ EXTRA="--mmd --per-column --rollback-series mmd2" bash run_queue.sh)

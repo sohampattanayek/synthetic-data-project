@@ -24,3 +24,4 @@ results/*
 !results/rollback/
 !results/rollback_analysis/
 !results/rollback_keeplr/
+!results/highlr/
