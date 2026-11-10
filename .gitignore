@@ -22,3 +22,5 @@ results/*
 !results/loss_shape/
 !results/stopping10/
 !results/rollback/
+!results/rollback_analysis/
+!results/rollback_keeplr/
