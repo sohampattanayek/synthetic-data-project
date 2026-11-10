@@ -25,3 +25,5 @@ results/*
 !results/rollback_analysis/
 !results/rollback_keeplr/
 !results/highlr/
+!results/smallbatch/
+!results/realistic/

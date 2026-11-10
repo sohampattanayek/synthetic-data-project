@@ -1,0 +1,61 @@
+{
+  "config": {
+    "epochs": 150,
+    "check_every": 3,
+    "max_rows": 10000,
+    "n_eval": 2000,
+    "detector": "none",
+    "lr": 0.0002,
+    "batch_size": 100,
+    "spike_epoch": null,
+    "spike_factor": 100.0,
+    "tstr_repeats": 10,
+    "mmd": true,
+    "per_column": true,
+    "rollback_series": null,
+    "rollback_h": 5.0,
+    "rollback_max": 3,
+    "rollback_keep_lr": false,
+    "seed": 1,
+    "name": "smallbatch/ctrl_s1"
+  },
+  "epochs_trained": 150,
+  "stopped_early_at": null,
+  "best_epoch": 99,
+  "rollbacks": [],
+  "noise_floor": {
+    "score": 0.019269,
+    "ks_mean": 0.023083,
+    "ks_max": 0.032,
+    "jsd_mean": 0.0026872,
+    "tvd_mean": 0.026389,
+    "excess_point_mass_max": 0.0235,
+    "corr_dist": 0.024254,
+    "c2st": 0.004104
+  },
+  "final": {
+    "score": 0.3382,
+    "ks_mean": 0.24114,
+    "ks_max": 0.61867,
+    "jsd_mean": 0.034554,
+    "tvd_mean": 0.11085,
+    "excess_point_mass_max": 0.0025,
+    "corr_dist": 0.055037,
+    "c2st": 0.99829
+  },
+  "best_checkpoint": {
+    "score": 0.33315,
+    "ks_mean": 0.23872,
+    "ks_max": 0.647,
+    "jsd_mean": 0.019555,
+    "tvd_mean": 0.091167,
+    "excess_point_mass_max": 0.0033333,
+    "corr_dist": 0.047311,
+    "c2st": 0.99938
+  },
+  "downstream_accuracy_on_real_test": {
+    "train_real": 0.859,
+    "train_final_synth": 0.825,
+    "train_best_synth": 0.8155
+  }
+}
