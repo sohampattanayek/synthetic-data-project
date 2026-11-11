@@ -201,6 +201,7 @@ class MonitoredCTGAN:
         self.best_epoch = None
         self.best_state = None
         self.stopped_epoch = None
+        self.diverged_epoch = None
         self._hook_calls = 0
 
     # -- the per-epoch hook ------------------------------------------------
@@ -217,6 +218,14 @@ class MonitoredCTGAN:
                 print(f"--- epoch {epoch}: learning rate multiplied by {self.lr_spike[1]:g} ---", flush=True)
         if epoch % self.check_every != 0:
             return False
+
+        # If the weights have become NaN/inf the model cannot be sampled any more.
+        # Record the epoch and stop; the checks logged so far are kept.
+        if not all(bool(torch.isfinite(p).all()) for p in self._gen().parameters()):
+            self.diverged_epoch = self.stopped_epoch = epoch
+            if self.verbose:
+                print(f"--- epoch {epoch}: generator weights are NaN/inf, training stopped ---", flush=True)
+            return True
 
         t0 = time.time()
         with torch.no_grad():

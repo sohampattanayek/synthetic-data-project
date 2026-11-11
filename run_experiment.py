@@ -225,15 +225,20 @@ def main():
 
     # Compare the final generator with the best checkpoint.
     n_final = len(train)
-    final_synth = mon.sample(n_final)
-    final_summary = report.summary(test, final_synth)
+    diverged = mon.diverged_epoch is not None
+    if diverged:   # weights are NaN: there is no final generator to sample from
+        final_synth, final_summary = None, {}
+    else:
+        final_synth = mon.sample(n_final)
+        final_summary = report.summary(test, final_synth)
     mon.restore_best()
     best_synth = mon.sample(n_final)
     best_summary = report.summary(test, best_synth)
 
     utility = {
         "train_real": tstr_accuracy(train, test, "income", cat_cols, args.seed),
-        "train_final_synth": tstr_accuracy(final_synth, test, "income", cat_cols, args.seed),
+        "train_final_synth": float("nan") if diverged else
+                             tstr_accuracy(final_synth, test, "income", cat_cols, args.seed),
         "train_best_synth": tstr_accuracy(best_synth, test, "income", cat_cols, args.seed),
     }
 
@@ -242,10 +247,11 @@ def main():
         "config": vars(args),
         "epochs_trained": last_epoch,
         "stopped_early_at": mon.stopped_epoch,
+        "diverged_at": mon.diverged_epoch,
         "best_epoch": mon.best_epoch,
         "rollbacks": mon.rollbacks,
         "noise_floor": {"score": noise_floor, **floor_summary},
-        "final": {"score": aggregate(final_summary), **final_summary},
+        "final": None if diverged else {"score": aggregate(final_summary), **final_summary},
         "best_checkpoint": {"score": aggregate(best_summary), **best_summary},
         "downstream_accuracy_on_real_test": utility,
     }
@@ -253,7 +259,10 @@ def main():
     plot_run(out)
 
     print(f"\nbest checkpoint: epoch {mon.best_epoch}  (score {summary['best_checkpoint']['score']:.4f})")
-    print(f"final epoch {last_epoch}:      score {summary['final']['score']:.4f}")
+    if diverged:
+        print(f"diverged: weights were NaN/inf at the epoch-{mon.diverged_epoch} check; last good check was epoch {last_epoch}")
+    else:
+        print(f"final epoch {last_epoch}:      score {summary['final']['score']:.4f}")
     print("downstream accuracy (train on X, test on real):",
           {k: round(v, 4) for k, v in utility.items()})
     print(f"results written to {out}/")
