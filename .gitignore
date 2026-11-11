@@ -27,3 +27,5 @@ results/*
 !results/highlr/
 !results/smallbatch/
 !results/realistic/
+!results/tvae/
+!results/tvae_analysis/

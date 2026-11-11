@@ -31,7 +31,7 @@ from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 
 from data import load_adult
-from monitor import MonitoredCTGAN, make_detector
+from monitor import MonitoredCTGAN, MonitoredTVAE, make_detector
 from plot_results import plot_run
 from validator import FidelityReport, MMDProductKernel, aggregate
 
@@ -148,7 +148,9 @@ def main():
     ap.add_argument("--max-rows", type=int, default=10000, help="subsample Adult for speed (0 = all)")
     ap.add_argument("--n-eval", type=int, default=2000, help="synthetic rows sampled per check")
     ap.add_argument("--detector", choices=["none", "patience", "cusum"], default="none")
-    ap.add_argument("--lr", type=float, default=2e-4, help="generator and discriminator learning rate")
+    ap.add_argument("--model", choices=["ctgan", "tvae"], default="ctgan")
+    ap.add_argument("--lr", type=float, default=None,
+                    help="learning rate (default: 2e-4 for CTGAN, 1e-3 for TVAE)")
     ap.add_argument("--batch-size", type=int, default=500, help="must be a multiple of 10 (CTGAN pac)")
     ap.add_argument("--spike-epoch", type=int, default=None,
                     help="planted failure: multiply learning rates after this epoch")
@@ -173,6 +175,8 @@ def main():
     ap.add_argument("--name", default=None, help="results subfolder name")
     args = ap.parse_args()
 
+    if args.lr is None:
+        args.lr = 2e-4 if args.model == "ctgan" else 1e-3
     set_seed(args.seed)
     name = args.name or f"adult_{args.detector}_lr{args.lr:g}_s{args.seed}"
     out = Path("results") / name
@@ -197,12 +201,15 @@ def main():
     if mmd is not None:
         print(f"MMD bandwidths from training data: h = {mmd.h:.3f}, lambda = {mmd.lam:.3f}")
 
-    mon = MonitoredCTGAN(
+    if args.model == "ctgan":
+        cls, model_kw = MonitoredCTGAN, dict(generator_lr=args.lr, discriminator_lr=args.lr, verbose=True)
+    else:
+        cls, model_kw = MonitoredTVAE, dict(lr=args.lr)
+    mon = cls(
         real_eval=holdout, numeric_cols=num_cols, categorical_cols=cat_cols,
         check_every=args.check_every, n_eval=args.n_eval,
         detector=make_detector(args.detector), seed=args.seed,
-        batch_size=args.batch_size, generator_lr=args.lr, discriminator_lr=args.lr,
-        verbose=True,
+        batch_size=args.batch_size, **model_kw,
         lr_spike=(args.spike_epoch, args.spike_factor) if args.spike_epoch else None,
         rollback=dict(series=args.rollback_series, h=args.rollback_h,
                       max_rollbacks=args.rollback_max,

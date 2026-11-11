@@ -21,7 +21,8 @@ import numpy as np
 import pandas as pd
 import torch
 import ctgan.synthesizers.ctgan as _ctgan_module
-from ctgan import CTGAN
+import ctgan.synthesizers.tvae as _tvae_module
+from ctgan import CTGAN, TVAE
 
 from validator import FidelityReport, aggregate
 
@@ -147,6 +148,25 @@ def make_detector(name: str, **kw):
 # ---------------------------------------------------------------------------
 
 class MonitoredCTGAN:
+    _n_opt = 2            # optimizers the model creates inside fit()
+    _module = _ctgan_module  # module whose tqdm / Adam are swapped during fit()
+
+    def _make_model(self, **kw):
+        return CTGAN(**kw)
+
+    def _gen(self):
+        """The network that is sampled from (checkpointed as the 'best' state)."""
+        return self.model._generator
+
+    def _losses(self):
+        losses = self.model.loss_values
+        if not len(losses):
+            return np.nan, np.nan
+        return float(losses["Generator Loss"].iloc[-1]), float(losses["Discriminator Loss"].iloc[-1])
+
+    def _fit_model(self, train, epochs):
+        self.model.fit(train, discrete_columns=self.categorical_cols, epochs=epochs)
+
     def __init__(self, real_eval: pd.DataFrame, numeric_cols, categorical_cols,
                  check_every: int = 1, n_eval: int = 2000, detector=None,
                  seed: int = 0, verbose: bool = True, extra_metrics=None,
@@ -174,7 +194,7 @@ class MonitoredCTGAN:
         self._snapshots: dict[int, dict] = {}
         self._base_lrs: list[list[float]] | None = None
         self.rollbacks: list[dict] = []
-        self.model = CTGAN(**ctgan_kwargs)
+        self.model = self._make_model(**ctgan_kwargs)
 
         self.history: list[dict] = []
         self.best_score = np.inf
@@ -188,8 +208,8 @@ class MonitoredCTGAN:
         """Called after each epoch. Returns True to stop training."""
         self._hook_calls += 1
         if self.lr_spike and epoch == self.lr_spike[0]:
-            if len(self._optimizers) != 2:
-                raise RuntimeError("could not find CTGAN's two optimizers for the lr spike")
+            if len(self._optimizers) != self._n_opt:
+                raise RuntimeError("could not find the model's optimizers for the lr spike")
             for opt in self._optimizers:
                 for g in opt.param_groups:
                     g["lr"] *= self.lr_spike[1]
@@ -204,13 +224,11 @@ class MonitoredCTGAN:
         summary = self.report.summary(self.real_eval, synth)
         score = aggregate(summary)
 
-        losses = self.model.loss_values
-        g_loss = float(losses["Generator Loss"].iloc[-1]) if len(losses) else np.nan
-        d_loss = float(losses["Discriminator Loss"].iloc[-1]) if len(losses) else np.nan
+        g_loss, d_loss = self._losses()
 
         if score < self.best_score:
             self.best_score, self.best_epoch = score, epoch
-            self.best_state = copy.deepcopy(self.model._generator.state_dict())
+            self.best_state = copy.deepcopy(self._gen().state_dict())
 
         extra = self.extra_metrics(synth) if self.extra_metrics else {}
 
@@ -239,13 +257,13 @@ class MonitoredCTGAN:
         (weights + batch-norm statistics), every parameter the two optimizers
         own (this is how the discriminator, a local variable inside CTGAN's
         fit(), is reached), and both Adam states."""
-        return {"gen": copy.deepcopy(self.model._generator.state_dict()),
+        return {"gen": copy.deepcopy(self._gen().state_dict()),
                 "params": [[p.detach().clone() for p in self._all_params(o)] for o in self._optimizers],
                 "opt": [copy.deepcopy(o.state_dict()) for o in self._optimizers]}
 
     def _restore(self, snap: dict, reset_lr: bool):
         current = [[g["lr"] for g in o.param_groups] for o in self._optimizers]
-        self.model._generator.load_state_dict(snap["gen"])
+        self._gen().load_state_dict(snap["gen"])
         for i, o in enumerate(self._optimizers):
             with torch.no_grad():
                 for p, saved in zip(self._all_params(o), snap["params"][i]):
@@ -255,8 +273,8 @@ class MonitoredCTGAN:
                 g["lr"] = lr0 if reset_lr else lr_now
 
     def _rollback_step(self, epoch: int, row: dict) -> dict:
-        if len(self._optimizers) != 2:
-            raise RuntimeError("could not find CTGAN's two optimizers for the rollback rule")
+        if len(self._optimizers) != self._n_opt:
+            raise RuntimeError("could not find the model's optimizers for the rollback rule")
         if self._base_lrs is None:
             raise RuntimeError("base learning rates were not recorded")
         rule = self.rollback
@@ -277,7 +295,8 @@ class MonitoredCTGAN:
 
     @contextmanager
     def _patched_epoch_iterator(self):
-        original = _ctgan_module.tqdm
+        mod = self._module
+        original = mod.tqdm
         hook = self._on_epoch_end
 
         class _HookedIterator:
@@ -295,14 +314,17 @@ class MonitoredCTGAN:
 
         # Capture the optimizers CTGAN creates inside fit() so the planted
         # learning-rate spike can reach them.
-        original_optim = _ctgan_module.optim
+        uses_optim_ns = hasattr(mod, "optim")  # CTGAN: `optim.Adam`; TVAE: `Adam`
+        original_optim = mod.optim if uses_optim_ns else None
+        original_adam = original_optim.Adam if uses_optim_ns else mod.Adam
         registry = self._optimizers
         monitor = self
 
-        class _RecordingAdam(original_optim.Adam):
+        class _RecordingAdam(original_adam):
             def __init__(self, *a, **k):
                 super().__init__(*a, **k)
                 registry.append(self)
+                monitor._on_optimizer_created(self)
                 monitor._base_lrs = [[g["lr"] for g in o.param_groups] for o in registry]
 
         class _OptimShim:
@@ -311,17 +333,26 @@ class MonitoredCTGAN:
             def __getattr__(self, name):
                 return getattr(original_optim, name)
 
-        _ctgan_module.tqdm = _HookedIterator
-        _ctgan_module.optim = _OptimShim()
+        mod.tqdm = _HookedIterator
+        if uses_optim_ns:
+            mod.optim = _OptimShim()
+        else:
+            mod.Adam = _RecordingAdam
         try:
             yield
         finally:
-            _ctgan_module.tqdm = original
-            _ctgan_module.optim = original_optim
+            mod.tqdm = original
+            if uses_optim_ns:
+                mod.optim = original_optim
+            else:
+                mod.Adam = original_adam
+
+    def _on_optimizer_created(self, opt):
+        pass
 
     def fit(self, train: pd.DataFrame, epochs: int):
         with self._patched_epoch_iterator():
-            self.model.fit(train, discrete_columns=self.categorical_cols, epochs=epochs)
+            self._fit_model(train, epochs)
         if self._hook_calls == 0:
             raise RuntimeError(
                 "Per-epoch hook never ran: this ctgan version's training loop "
@@ -332,7 +363,7 @@ class MonitoredCTGAN:
     def restore_best(self):
         """Load the generator weights from the best-scoring checkpoint."""
         if self.best_state is not None:
-            self.model._generator.load_state_dict(self.best_state)
+            self._gen().load_state_dict(self.best_state)
         return self
 
     def sample(self, n: int) -> pd.DataFrame:
@@ -341,3 +372,40 @@ class MonitoredCTGAN:
 
     def history_frame(self) -> pd.DataFrame:
         return pd.DataFrame(self.history)
+
+
+class MonitoredTVAE(MonitoredCTGAN):
+    """The same monitor for TVAE (ctgan's variational autoencoder).
+
+    Differences from CTGAN: one optimizer (encoder + decoder together), the
+    decoder is the network that is sampled from, one loss (reconstruction +
+    KL; logged in the g_loss column as the mean over the epoch's batches,
+    d_loss is empty), and the number of epochs and the learning rate are not
+    arguments of fit(). TVAE's Adam uses torch's default learning rate (1e-3)
+    unless `lr` is given.
+    """
+    _n_opt = 1
+    _module = _tvae_module
+
+    def _make_model(self, lr=None, **kw):
+        self._tvae_lr = lr
+        return TVAE(**kw)
+
+    def _gen(self):
+        return self.model.decoder
+
+    def _losses(self):
+        losses = self.model.loss_values
+        if not len(losses):
+            return np.nan, np.nan
+        last = losses[losses["Epoch"] == losses["Epoch"].iloc[-1]]
+        return float(last["Loss"].mean()), np.nan
+
+    def _on_optimizer_created(self, opt):
+        if self._tvae_lr is not None:
+            for g in opt.param_groups:
+                g["lr"] = self._tvae_lr
+
+    def _fit_model(self, train, epochs):
+        self.model.epochs = epochs
+        self.model.fit(train, discrete_columns=self.categorical_cols)
