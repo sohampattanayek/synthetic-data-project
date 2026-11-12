@@ -11,7 +11,8 @@ Step 2 (probe / full): build the files Mantis gets from the saved samples.
 
 Files (results/mantis/):
   samples_{ctrl,spike}_s{seed}.csv   raw sampled rows, column `epoch`
-  probe.csv, export.csv              source, epoch, label, row_text, 15 columns
+  probe.csv, export.csv              source, epoch, label, impossible, row_text, 15 columns
+  probe_v2.csv, export_v2.csv        same, but row_text leaves out capital_gain and capital_loss
   probe_vectors.csv, export_vectors.csv   source, epoch, label, vector (20 numbers)
 The vector is: numeric columns standardized with the real training mean/sd,
 categoricals one-hot, then PCA to 20 dimensions fitted on the real training rows.
@@ -86,8 +87,17 @@ def build(seed, epochs, n_per_group, stem):
             parts.append(s[s.epoch == ep].head(n_per_group).assign(source=name))
     d = pd.concat(parts, ignore_index=True)
     d["label"] = d["source"] + "|" + d["epoch"].astype(str)
+    # 1 if the row has a value no real Adult row can have (negative capital, age under 17).
+    # Lets the map be colored by it, to see whether such rows explain the separation.
+    d["impossible"] = ((d.capital_gain < 0) | (d.capital_loss < 0) | (d.age < 17)).astype(int)
+    head = ["source", "epoch", "label", "impossible", "row_text"]
     d["row_text"] = serialize(d, cols)
-    d[["source", "epoch", "label", "row_text"] + cols].to_csv(OUT / f"{stem}.csv", index=False)
+    d[head + cols].to_csv(OUT / f"{stem}.csv", index=False)
+    # v2: the text leaves out capital_gain/capital_loss, which give synthetic rows away
+    # (zero in most real rows, never exactly zero in CTGAN rows). The columns themselves stay.
+    v2 = d.copy()
+    v2["row_text"] = serialize(d, [c for c in cols if c not in ("capital_gain", "capital_loss")])
+    v2[head + cols].to_csv(OUT / f"{stem}_v2.csv", index=False)
 
     mu, sd = train[num].mean(), train[num].std()
     def features(x):
@@ -97,12 +107,14 @@ def build(seed, epochs, n_per_group, stem):
         return np.hstack([z.to_numpy(), oh.to_numpy(float)])
     pca = PCA(n_components=20, random_state=seed).fit(features(train))
     v = pca.transform(features(d))
-    out = d[["source", "epoch", "label"]].copy()
+    out = d[["source", "epoch", "label", "impossible"]].copy()
     out["vector"] = [json.dumps([round(float(a), 4) for a in row]) for row in v]
+    out["coordinate1"], out["coordinate2"] = v[:, 0].round(4), v[:, 1].round(4)  # first 2 PCA components
     out.to_csv(OUT / f"{stem}_vectors.csv", index=False)
     print(d.groupby("label", sort=False).size().to_string())
     print(f"PCA: 20 of {features(train).shape[1]} dimensions, variance kept {pca.explained_variance_ratio_.sum():.3f}")
-    print(f"wrote {OUT/stem}.csv ({len(d)} rows) and {OUT/stem}_vectors.csv")
+    print(d.groupby("source", sort=False).impossible.mean().round(3).to_string())
+    print(f"wrote {OUT/stem}.csv, {OUT/stem}_v2.csv ({len(d)} rows each) and {OUT/stem}_vectors.csv")
 
 
 def main():
