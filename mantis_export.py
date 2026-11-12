@@ -13,6 +13,7 @@ Files (results/mantis/):
   samples_{ctrl,spike}_s{seed}.csv   raw sampled rows, column `epoch`
   probe.csv, export.csv              source, epoch, label, impossible, row_text, 15 columns
   probe_v2.csv, export_v2.csv        same, but row_text leaves out capital_gain and capital_loss
+  probe_v3.csv, export_v3.csv        same, but row_text also leaves out education_num
   probe_vectors.csv, export_vectors.csv   source, epoch, label, vector (20 numbers)
 The vector is: numeric columns standardized with the real training mean/sd,
 categoricals one-hot, then PCA to 20 dimensions fitted on the real training rows.
@@ -90,7 +91,11 @@ def build(seed, epochs, n_per_group, stem):
     # 1 if the row has a value no real Adult row can have (negative capital, age under 17).
     # Lets the map be colored by it, to see whether such rows explain the separation.
     d["impossible"] = ((d.capital_gain < 0) | (d.capital_loss < 0) | (d.age < 17)).astype(int)
-    head = ["source", "epoch", "label", "impossible", "row_text"]
+    # 1 if education_num is not the number real Adult rows have for that education level
+    # (in real data the two columns carry the same information).
+    edu_map = pd.concat([train, val]).groupby("education").education_num.agg(lambda v: v.mode().iloc[0])
+    d["edu_mismatch"] = (d.education.map(edu_map) != d.education_num).astype(int)
+    head = ["source", "epoch", "label", "impossible", "edu_mismatch", "row_text"]
     d["row_text"] = serialize(d, cols)
     d[head + cols].to_csv(OUT / f"{stem}.csv", index=False)
     # v2: the text leaves out capital_gain/capital_loss, which give synthetic rows away
@@ -98,6 +103,10 @@ def build(seed, epochs, n_per_group, stem):
     v2 = d.copy()
     v2["row_text"] = serialize(d, [c for c in cols if c not in ("capital_gain", "capital_loss")])
     v2[head + cols].to_csv(OUT / f"{stem}_v2.csv", index=False)
+    # v3: also leaves education_num out of the text (education stays).
+    v3 = d.copy()
+    v3["row_text"] = serialize(d, [c for c in cols if c not in ("capital_gain", "capital_loss", "education_num")])
+    v3[head + cols].to_csv(OUT / f"{stem}_v3.csv", index=False)
 
     mu, sd = train[num].mean(), train[num].std()
     def features(x):
@@ -107,14 +116,14 @@ def build(seed, epochs, n_per_group, stem):
         return np.hstack([z.to_numpy(), oh.to_numpy(float)])
     pca = PCA(n_components=20, random_state=seed).fit(features(train))
     v = pca.transform(features(d))
-    out = d[["source", "epoch", "label", "impossible"]].copy()
+    out = d[["source", "epoch", "label", "impossible", "edu_mismatch"]].copy()
     out["vector"] = [json.dumps([round(float(a), 4) for a in row]) for row in v]
     out["coordinate1"], out["coordinate2"] = v[:, 0].round(4), v[:, 1].round(4)  # first 2 PCA components
     out.to_csv(OUT / f"{stem}_vectors.csv", index=False)
     print(d.groupby("label", sort=False).size().to_string())
     print(f"PCA: 20 of {features(train).shape[1]} dimensions, variance kept {pca.explained_variance_ratio_.sum():.3f}")
-    print(d.groupby("source", sort=False).impossible.mean().round(3).to_string())
-    print(f"wrote {OUT/stem}.csv, {OUT/stem}_v2.csv ({len(d)} rows each) and {OUT/stem}_vectors.csv")
+    print(d.groupby("source", sort=False)[["impossible", "edu_mismatch"]].mean().round(3).to_string())
+    print(f"wrote {OUT/stem}.csv, {OUT/stem}_v2.csv, {OUT/stem}_v3.csv ({len(d)} rows each) and {OUT/stem}_vectors.csv")
 
 
 def main():
