@@ -45,8 +45,9 @@ Rolling back and continuing with the learning rate reset reaches the
 unspiked level (\rbLow--\rbHigh{} at \x10 to \x100), but rolling back while
 the bad learning rate stays does not help. A run that is set up badly from
 the first epoch (learning rate \x10) loses about 4 accuracy points and
-raises no alarm. All results so far are for one dataset, one model and a
-planted failure.
+raises no alarm. On a second generator, TVAE (5 seeds), the same detectors
+with unchanged settings caught every damaging spike with no false alarms.
+All results so far are for one dataset and a planted failure.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -73,7 +74,7 @@ detector on the results. The question is whether this can notice a failure
 that starts partway through training, without labels and without a
 downstream task.
 
-What we found, on one dataset (UCI Adult) and one model (CTGAN):
+What we found, on one dataset (UCI Adult), mainly with CTGAN:
 \begin{itemize}
 \item The generator loss does not track downstream utility. Fidelity metrics
 track it over a whole run, but no better than the epoch number alone does.
@@ -87,6 +88,8 @@ before the failure \emph{and} removing its cause recovers normal quality;
 rolling back without removing the cause does not.
 \item The monitor only sees changes. A run that is worse from the first
 epoch raises no alarm.
+\item On TVAE, the same detectors with settings fixed on CTGAN caught every
+spike that damaged the model, with no false alarms (5 seeds).
 \end{itemize}
 When a labelled validation set and a known downstream task exist, simply
 keeping the checkpoint with the best validation TSTR is a stronger selector
@@ -99,8 +102,9 @@ task-free alarm, not a replacement for that.
 mode-specific normalization and conditional sampling for mixed-type data and
 is widely used through SDV~\cite{patki2016sdv}. Newer generators use
 diffusion, such as TabDDPM~\cite{kotelnikov2023tabddpm} and
-TabSyn~\cite{zhang2024tabsyn}. We study only CTGAN so far, so results may not
-carry over to these models.
+TabSyn~\cite{zhang2024tabsyn}. We study CTGAN and, more briefly, TVAE (a
+variational autoencoder from the same paper as CTGAN~\cite{xu2019ctgan}), so
+results may not carry over to diffusion models.
 
 \textbf{Measuring fidelity.} Per-column statistics (Kolmogorov--Smirnov
 distance, Jensen--Shannon divergence, total variation) capture marginals but
@@ -548,12 +552,68 @@ Alarms: score / MMD$^2$ / KS / loss & 0/0/0/0 & 0/0/0/0 & 0/1/0/5 \\
 \end{tabular}}
 \end{table}
 
-\subsection{Other datasets, TVAE, and a natural failure}
+\subsection{A second generator: TVAE}\label{sec:tvae}
+We repeated the spike study on TVAE~\cite{xu2019ctgan} from the same
+\texttt{ctgan} package (one Adam optimizer, default learning rate
+$10^{-3}$, batch size 500), with the same split, checks, metrics and spike
+design, on seeds 0--4 (5 controls and 20 spiked runs). TVAE has no
+discriminator, so the loss series is its training loss (reconstruction plus
+KL). All 20 spiked runs are identical to their controls up to epoch 90. The
+detectors use the past-only settings fixed on CTGAN; nothing was tuned for
+TVAE. Table~\ref{tab:tvae} gives the results.
+
+\begin{table}[t]
+\caption{TVAE, learning rate multiplied at epoch 90 (seeds 0--4). Test TSTR
+at the last check; differences from the matched control in accuracy points,
+paired by seed. Detection: spiked runs detected (mean delay in epochs). No
+detector alarmed on a control or before the spike. One \x100 run diverged and
+is excluded.}
+\label{tab:tvae}
+\centering
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lccccc}
+\toprule
+ & Control & \x3 & \x10 & \x30 & \x100 \\
+\midrule
+Runs finished & 5 & 5 & 5 & 5 & 4 \\
+Test TSTR & 0.808 & 0.802 & 0.760 & 0.767 & 0.707 \\
+Spiked $-$ control & & $-0.6\pm1.5$ & $-4.8\pm2.1$ & $-4.1\pm4.1$ & $-9.8\pm11.3$ \\
+Worse than control & & 3/5 & 5/5 & 4/5 & 4/4 \\
+MMD$^2$, last 5 checks & 0.030 & 0.026 & 0.333 & 0.323 & 0.297 \\
+\midrule
+Score, expanding & 0 alarms & 0/5 & 5/5 (13.2) & 5/5 (13.8) & 4/4 (4.5) \\
+MMD$^2$, rolling & 0 alarms & 3/5 (3) & 5/5 (3) & 5/5 (3) & 4/4 (3) \\
+Mean KS, expanding & 0 alarms & 0/5 & 5/5 (3) & 5/5 (3) & 4/4 (3) \\
+Training loss, fixed & 0 alarms & 4/5 (3) & 5/5 (3) & 5/5 (3) & 4/4 (3) \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\textbf{Detection carries over.} From \x10 up the spike damages TVAE, and all
+four detectors caught all 14 damaged runs that finished, with no false
+alarms. MMD$^2$, mean KS and the training loss alarm at the first check after
+the spike. The aggregate score, the best detector on CTGAN, is the slowest
+on TVAE (about 13 epochs at \x10 and \x30).
+
+\textbf{The damage looks different.} At \x10, TVAE's test TSTR ends at
+0.755--0.766 in all 5 seeds. In seed 0 it drops from 0.820 at epoch 90 to
+0.7655 at the next check and stays there; 0.7655 is the accuracy of always
+predicting the majority class, so the synthetic rows no longer carry usable
+information about income. Fidelity is hit much harder than for CTGAN: MMD$^2$
+ends about 10 times higher than the control. At \x3, TVAE loses little
+($-0.6\pm1.5$ points at the last check), while CTGAN lost about 3 points
+(Table~\ref{tab:damage}). One \x100 run diverged (weights became NaN between
+epochs 90 and 93), a failure that needs no detector.
+
+\textbf{Not yet done on TVAE:} 10 seeds, stopping rules, roll back and
+continue, and the break-or-trend analysis. The \x100 interval is very wide.
+
+\subsection{Other datasets and a natural failure}
 \pending{Results on two more datasets (e.g.\ a credit-default dataset and a
-10,000-row subsample of Covertype) and on TVAE are not run yet. No failure
-that starts by itself partway through a run has been found yet; the
-learning-rate spike is still the only mid-run failure tested. Fill this
-section only from finished runs.}
+10,000-row subsample of Covertype) are not run yet. No failure that starts by
+itself partway through a run has been found yet; the learning-rate spike is
+still the only mid-run failure tested. Fill this section only from finished
+runs.}
 
 %======================================================================
 \section{Discussion and Limitations}
@@ -569,7 +629,8 @@ which is no better than what a spiked run ends with at small spike sizes.
 Rolling back helps only if the cause of the failure is also removed.
 
 \textbf{Limitations.}
-(1) One dataset, one model, 10 seeds. (2) The only mid-run failure is a
+(1) One dataset; CTGAN with 10 seeds, TVAE with 5 seeds and only the
+damage and detection parts. (2) The only mid-run failure is a
 planted learning-rate spike, which is an easy failure to detect. (3) The best
 detector was picked after seeing all 10 seeds; the detector we picked in
 advance failed on the held-out seeds. (4) An earlier version of our detector
@@ -591,9 +652,10 @@ mid-run failure without false alarms on normal runs, while the generator
 loss and TSTR were not usable as alarms. Detecting a failure was the easier
 part: stopping at the alarm did not reliably help, and rolling back helped
 only when the cause of the failure was removed. The monitor cannot see a run
-that was set up badly from the start. The next steps are other datasets,
-other generators, and a failure that happens on its own rather than being
-planted.
+that was set up badly from the start. On TVAE the same detectors, with
+unchanged settings, caught every damaging spike without false alarms. The
+next steps are other datasets, the remaining analyses on TVAE, and a failure
+that happens on its own rather than being planted.
 
 \section*{Acknowledgment}
 % CHECK WITH EACH PERSON BEFORE NAMING THEM.
