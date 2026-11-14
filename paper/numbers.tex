@@ -1,0 +1,32 @@
+% Headline numbers used in the running text. Every value is copied from
+% research_brief.md (section given in the comment). Tables in main.tex hold
+% the rest. To update after new runs, change the value here only.
+
+% Setup
+\newcommand{\nSeeds}{10}
+\newcommand{\nRows}{10{,}000}
+\newcommand{\nEpochs}{150}
+\newcommand{\realTSTR}{0.856}            % Setup: real-data TSTR baseline
+
+% Damage, 10 seeds (F, "Damage, 10 seeds"): last-check test TSTR, mean of 10 samples
+\newcommand{\dmgCtrl}{0.804}
+\newcommand{\dmgThree}{0.777}
+\newcommand{\dmgTen}{0.766}
+\newcommand{\dmgThirty}{0.748}
+\newcommand{\dmgHundred}{0.732}
+
+% Past-only detection, aggregate score, expanding reference, h = 5 (F)
+\newcommand{\scoreExpDet}{39}            % of 40 spiked runs
+\newcommand{\scoreExpCtrl}{0}            % of 10 controls
+\newcommand{\tstrDet}{13}                % TSTR mean of 10, expanding, of 40
+
+% Roll back and continue (H), last check, mean of 10 seeds
+\newcommand{\rbLow}{0.803}
+\newcommand{\rbHigh}{0.805}
+
+% From-the-start learning rate x10 (I)
+\newcommand{\highlrCost}{4.2}            % accuracy points, last check
+
+% TSTR noise (B)
+\newcommand{\tstrSampleSdLow}{0.016}
+\newcommand{\tstrSampleSdHigh}{0.018}

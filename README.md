@@ -104,6 +104,8 @@ python changepoints.py --pilot results/pilot_s{0,1,2,3,4} --spiked results/spike
 | `plot_results.py` | redraws a run's figure from its saved metrics |
 | `analyze_pilot.py` | aggregates several runs: correlations with utility, checkpoint selection, summary figure |
 | `changepoints.py` | offline CUSUM / binary segmentation on metric series; online CUSUM on planted-break runs |
+| `paper/` | draft paper (LaTeX, IEEE conference format); `python paper/make_figures.py results paper/figures` rebuilds its main figure from the logged runs |
+| `mantis_export.py` | writes real and synthetic rows at several epochs to CSV for a Mantis map |
 
 ## Roadmap
 
