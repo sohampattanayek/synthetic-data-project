@@ -30,7 +30,7 @@ from sklearn.ensemble import HistGradientBoostingClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 
-from data import load_adult
+from data import load_dataset
 from monitor import MonitoredCTGAN, MonitoredTVAE, make_detector
 from plot_results import plot_run
 from validator import FidelityReport, MMDProductKernel, aggregate
@@ -80,7 +80,7 @@ def tstr_two_splits(train, val, test, target, categorical_cols, seed) -> tuple[f
             float(accuracy_score(test[target].astype(str), clf.predict(encode(test)))))
 
 
-def per_check_utility(synth, mon, val, test, cat_cols, seed, repeats, n_eval) -> dict:
+def per_check_utility(synth, mon, val, test, cat_cols, seed, repeats, n_eval, target="income") -> dict:
     """TSTR on the check's own sample (tstr_val, exactly as in the pilot), plus
     optional repeats on fresh samples from the same generator:
       tstr_rep_mean / tstr_rep_sd   validation TSTR over the repeats (noise estimate)
@@ -94,12 +94,12 @@ def per_check_utility(synth, mon, val, test, cat_cols, seed, repeats, n_eval) ->
     training run. All RNG states are saved and restored around them, so a run
     with repeats follows exactly the same trajectory as one without.
     """
-    out = {"tstr_val": tstr_accuracy(synth, val, "income", cat_cols, seed)}
+    out = {"tstr_val": tstr_accuracy(synth, val, target, cat_cols, seed)}
     if repeats <= 0:
         return out
     states = (torch.get_rng_state(), np.random.get_state(), random.getstate())
     try:
-        reps = np.array([tstr_two_splits(mon.sample(n_eval), val, test, "income", cat_cols, seed)
+        reps = np.array([tstr_two_splits(mon.sample(n_eval), val, test, target, cat_cols, seed)
                          for _ in range(repeats)])
     finally:
         torch.set_rng_state(states[0])
@@ -145,6 +145,7 @@ def main():
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--epochs", type=int, default=100)
     ap.add_argument("--check-every", type=int, default=2, help="evaluate every k epochs")
+    ap.add_argument("--dataset", choices=["adult", "credit", "covertype"], default="adult")
     ap.add_argument("--max-rows", type=int, default=10000, help="subsample Adult for speed (0 = all)")
     ap.add_argument("--n-eval", type=int, default=2000, help="synthetic rows sampled per check")
     ap.add_argument("--detector", choices=["none", "patience", "cusum"], default="none")
@@ -182,13 +183,13 @@ def main():
     out = Path("results") / name
     out.mkdir(parents=True, exist_ok=True)
 
-    df, num_cols, cat_cols = load_adult(args.max_rows or None, args.seed)
+    df, num_cols, cat_cols, target = load_dataset(args.dataset, args.max_rows or None, args.seed)
     train, rest = train_test_split(df, test_size=0.4, random_state=args.seed,
-                                   stratify=df["income"])
+                                   stratify=df[target])
     val, test = train_test_split(rest, test_size=0.5, random_state=args.seed,
-                                 stratify=rest["income"])
+                                 stratify=rest[target])
     holdout = val  # fidelity is always measured against held-out real data
-    print(f"Adult: {len(train)} train / {len(val)} validation / {len(test)} test rows")
+    print(f"{args.dataset.capitalize()}: {len(train)} train / {len(val)} validation / {len(test)} test rows")
 
     # Noise floor: how different do two REAL samples look under the same metrics?
     report = FidelityReport(num_cols, cat_cols, seed=args.seed)
@@ -216,7 +217,7 @@ def main():
                       reset_lr=not args.rollback_keep_lr) if args.rollback_series else None,
         extra_metrics=lambda synth: {
             **per_check_utility(synth, mon, val, test, cat_cols, args.seed,
-                                args.tstr_repeats, args.n_eval),
+                                args.tstr_repeats, args.n_eval, target),
             **fidelity_extras(synth, val, report if args.per_column else None, mmd)},
     )
     mon.fit(train, epochs=args.epochs)
@@ -236,10 +237,10 @@ def main():
     best_summary = report.summary(test, best_synth)
 
     utility = {
-        "train_real": tstr_accuracy(train, test, "income", cat_cols, args.seed),
+        "train_real": tstr_accuracy(train, test, target, cat_cols, args.seed),
         "train_final_synth": float("nan") if diverged else
-                             tstr_accuracy(final_synth, test, "income", cat_cols, args.seed),
-        "train_best_synth": tstr_accuracy(best_synth, test, "income", cat_cols, args.seed),
+                             tstr_accuracy(final_synth, test, target, cat_cols, args.seed),
+        "train_best_synth": tstr_accuracy(best_synth, test, target, cat_cols, args.seed),
     }
 
     last_epoch = int(hist["epoch"].iloc[-1])

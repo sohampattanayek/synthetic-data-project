@@ -30,3 +30,6 @@ results/*
 !results/tvae/
 !results/tvae_analysis/
 !results/mantis/
+!results/credit/
+!results/covertype/
+!results/datasets_analysis/
