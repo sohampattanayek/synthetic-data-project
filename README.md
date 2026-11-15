@@ -106,6 +106,7 @@ python changepoints.py --pilot results/pilot_s{0,1,2,3,4} --spiked results/spike
 | `changepoints.py` | offline CUSUM / binary segmentation on metric series; online CUSUM on planted-break runs |
 | `paper/` | draft paper (LaTeX, IEEE conference format); `python paper/make_figures.py results paper/figures` rebuilds its main figure from the logged runs |
 | `mantis_export.py` | writes real and synthetic rows at several epochs to CSV for a Mantis map |
+| `map_separation.py` | measures how well groups of rows separate on an exported Mantis map (10-nearest-neighbour on the 2-D positions) |
 
 ## Roadmap
 
