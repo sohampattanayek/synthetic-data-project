@@ -54,11 +54,13 @@ python realistic_failure.py --out "$OUT/realistic" > /dev/null
 
 step "TVAE"
 python tvae_analysis.py --out "$OUT/tvae_analysis" > /dev/null
+python stopping_rules.py --runs results/tvae/ctrl_s* results/tvae/spike90x*_s* --out "$OUT/tvae_stopping" > /dev/null
 
 step "other datasets (credit-card default, Covertype)"
 for d in credit covertype; do
   if [ -f "results/$d/spike90x30_s4/summary.json" ]; then
     python tvae_analysis.py --runs "results/$d" --out "$OUT/datasets_analysis/$d" > /dev/null
+    python stopping_rules.py --runs results/$d/ctrl_s* results/$d/spike90x*_s* --out "$OUT/datasets_analysis/$d/stopping" > /dev/null
   else
     echo "results/$d is not complete, skipped"
   fi

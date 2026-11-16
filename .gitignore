@@ -29,6 +29,7 @@ results/*
 !results/realistic/
 !results/tvae/
 !results/tvae_analysis/
+!results/tvae_stopping/
 !results/mantis/
 !results/credit/
 !results/covertype/
