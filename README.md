@@ -4,7 +4,7 @@
 
 CTGAN training is unstable. Sample quality does not improve monotonically with epochs, and failures such as mode collapse are usually found only after training finishes. This project trains CTGAN with a per-epoch hook that samples from the generator, scores the samples against held-out real data, keeps the best checkpoint, and optionally stops early when a change detector fires.
 
-> Status: early-stage student research project. The monitoring code works and a 5-seed pilot on one dataset is done (below). Induced-failure regimes, more datasets, other model families and the detector comparison are next. See [Roadmap](#roadmap).
+> Status: student research project, not yet a finished paper. Done so far: a 5-seed pilot (below), a planted-failure study with 10 seeds on Adult (learning-rate spikes of four sizes), detectors that only use past checks, stopping and roll-back rules, a second model (TVAE) and two more datasets (credit-card default, Covertype; 5 seeds each). The failure is planted; no failure that starts by itself mid-run has been found. The sections below describe the pilot; the later tables are in `results/` and can be rebuilt with `bash reproduce.sh`. See [Roadmap](#roadmap).
 
 ## What it does
 
@@ -123,11 +123,14 @@ python changepoints.py --pilot results/pilot_s{0,1,2,3,4} --spiked results/spike
 ## Roadmap
 
 - [x] Pilot: 5 seeds on Adult with per-check downstream utility
-- [ ] Estimate how much of per-check TSTR variation is sampling noise
-- [x] Planted break (learning-rate spike at a known epoch) with online CUSUM
-- [ ] Subtler induced failures (batch size, category imbalance, smaller spikes)
-- [ ] Compare detectors on detection delay, false alarms and compute saved
-- [ ] Add more datasets (e.g. Covertype, a credit-default dataset)
+- [x] Estimate how much of per-check TSTR variation is sampling noise (`results/severity/`)
+- [x] Planted break (learning-rate spike at a known epoch) with online CUSUM; spike sizes x3 to x100, 10 seeds
+- [x] Settings that are bad from the start (high learning rate, small batch): the monitor does not see these (`results/realistic/`)
+- [ ] A failure that starts by itself partway through a run (none found yet)
+- [x] Compare detectors on detection delay and false alarms, using only past checks (`results/causal/`)
+- [x] Stopping rules and roll-back-and-continue (`results/stopping10/`, `results/rollback_analysis/`)
+- [x] Second model: TVAE (`results/tvae_analysis/`, `results/tvae_stopping/`)
+- [x] More datasets: credit-card default and Covertype, 5 seeds each (`results/datasets_analysis/`)
 - [ ] Study how to weight metrics in the aggregate score
 
 ## Limitations
@@ -135,7 +138,10 @@ python changepoints.py --pilot results/pilot_s{0,1,2,3,4} --spiked results/spike
 - The aggregate score is an unweighted mean of metrics; the right combination is an open question.
 - CUSUM drift and threshold values are hand-picked, not calibrated.
 - The per-epoch hook relies on CTGAN's internal training loop, so the `ctgan` version is pinned.
-- Results so far come from one dataset, one model (CTGAN) and default settings.
+- The only mid-run failure tested is a planted learning-rate spike. A run that is set up badly from the first epoch is not detected.
+- Most results are on Adult with CTGAN (10 seeds). TVAE and the two other datasets have 5 seeds each and fewer analyses.
+- On credit-card default and Covertype, a classifier trained on the synthetic data is no better than always predicting the largest class, even in normal runs, so the utility numbers there say little; the fidelity-based alarms are the usable part.
+- One detector (aggregate score, expanding reference) gave a false alarm on 1 of 5 normal runs on each new dataset; the generator loss alarmed on 5 of 5 normal credit runs.
 
 ## References
 
