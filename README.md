@@ -99,11 +99,23 @@ python changepoints.py --pilot results/pilot_s{0,1,2,3,4} --spiked results/spike
 |---|---|
 | `validator.py` | fidelity metrics and the aggregate score |
 | `monitor.py` | per-epoch training hook, checkpointing, change detectors |
-| `data.py` | Adult dataset download and loading |
+| `data.py` | dataset download and loading (Adult, credit-card default, Covertype; `--dataset`) |
 | `run_experiment.py` | runs one experiment and writes results |
 | `plot_results.py` | redraws a run's figure from its saved metrics |
 | `analyze_pilot.py` | aggregates several runs: correlations with utility, checkpoint selection, summary figure |
 | `changepoints.py` | offline CUSUM / binary segmentation on metric series; online CUSUM on planted-break runs |
+| `run_queue.sh` | restartable batch of training runs: matched controls plus learning-rate spikes ×3, ×10, ×30, ×100 at epoch 90 |
+| `severity.py` | detection rate, delay and damage against spike size; noise in per-check TSTR |
+| `dependence.py` | serial dependence between checks (long-run variance) and BIC comparison of constant, trend, mean-shift and broken-trend models |
+| `stopping_rules.py` | simulates stopping and checkpoint-selection rules on the logged runs |
+| `mmd_analysis.py` | MMD with a product kernel and the per-column view of the spiked runs |
+| `trend_changes.py` | change-in-trend analysis with `ruptures`, refit at every check |
+| `causal_detection.py` | CUSUM detectors that only use past checks (fixed, expanding and rolling reference) |
+| `loss_shape.py` | whether each series over a normal run is better described by a smooth curve or a change point |
+| `rollback_analysis.py` | roll back to a checkpoint and continue: does training recover? |
+| `realistic_failure.py` | settings that are bad from the first epoch (learning rate too high, batch too small) |
+| `tvae_analysis.py` | the spike study on a second generator (TVAE); also used for the other datasets via `--runs` |
+| `reproduce.sh` | rebuilds every analysis table from the logged runs (about a minute; no retraining). `bash reproduce.sh /tmp/check --compare` checks them against `results/` |
 | `paper/` | draft paper (LaTeX, IEEE conference format); `python paper/make_figures.py results paper/figures` rebuilds its main figure from the logged runs |
 | `mantis_export.py` | writes real and synthetic rows at several epochs to CSV for a Mantis map |
 | `map_separation.py` | measures how well groups of rows separate on an exported Mantis map (10-nearest-neighbour on the 2-D positions) |
